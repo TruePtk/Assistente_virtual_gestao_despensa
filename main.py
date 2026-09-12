@@ -1,7 +1,8 @@
 import logging
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 from config import TELEGRAM_BOT_TOKEN
-import telegram_config.handlers as handlers
+import handlers.telegram as handlers
+from telegram.ext import CallbackQueryHandler
 
 # Configuração de logs para facilitar o debug
 logging.basicConfig(
@@ -10,6 +11,7 @@ logging.basicConfig(
 )
 
 def main():
+
     # Inicializa a aplicação do bot
     app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
 
@@ -21,6 +23,10 @@ def main():
     
     # Filtra mensagens de texto comuns (ignorando comandos)
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handlers.handle_text))
+
+    # Registra o manipulador para os botões flutuantes
+    app.add_handler(CallbackQueryHandler(handlers.lidar_com_botoes))
+
 
     print("Bot rodando! Pressione Ctrl+C para parar.")
     
