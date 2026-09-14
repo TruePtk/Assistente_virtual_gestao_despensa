@@ -1,65 +1,80 @@
 🥫 Assistente Virtual - Gestão de Despensa (TCC)
-Este documento contém as instruções para configurar o ambiente de desenvolvimento local, rodar o bot do Telegram e entender a arquitetura atual do nosso projeto.
 
-Atualmente, o núcleo do sistema já consegue receber imagens de notas fiscais via Telegram e utilizar a API do Google Gemini (modelo 3.5 Flash Lite) para extrair e estruturar os itens em formato JSON.
+Bot do Telegram para cadastrar, consultar e consumir itens de uma despensa. O bot também lê fotos de notas fiscais, interpreta mensagens com o Gemini e envia lembretes moderados para confirmar se os itens ainda estão disponíveis.
 
 1. Pré-requisitos
-Antes de iniciar, certifique-se de que você tem as seguintes ferramentas instaladas na sua máquina:
 
-Python 3.12+
+- Python 3.12 ou superior.
+- Uma conta e um bot do Telegram criado pelo BotFather.
+- Uma chave da API do Google Gemini.
 
-Git (para versionamento de código)
+O projeto usa SQLite. O arquivo `despensa.db` é criado automaticamente na primeira execução; não é necessário instalar PostgreSQL.
 
-PostgreSQL (para a próxima fase de persistência de dados)
+2. Configuração
 
-Uma conta no Telegram para testar o bot.
+No Windows, crie e ative um ambiente virtual:
 
-2. Configuração do Ambiente Local
-Recomendamos o uso de um ambiente virtual (venv) para isolar as dependências do projeto. Siga os passos abaixo no seu terminal (focado em ambiente Windows):
+	python -m venv venv
+	venv\Scripts\activate
 
-Clonar o repositório:
+Instale as dependências:
 
-git clone https://github.com/SEU_USUARIO/Assistente_virtual_gestao_despensa.git
-cd Assistente_virtual_gestao_despensa
+	pip install -r requirements.txt
 
-Criar e ativar o ambiente virtual:
+Crie um arquivo `.env` na raiz do projeto:
 
-python -m venv venv
-venv\Scripts\activate
+	TELEGRAM_BOT_TOKEN=token_do_botfather
+	GEMINI_API_KEY=chave_do_google_ai_studio
 
-Instalar as dependências:
+Nunca publique o arquivo `.env` nem suas chaves em um repositório.
 
-pip install -r requirements.txt
+3. Execução
 
+Com o ambiente virtual ativado e o `.env` configurado:
 
-3. Variáveis de Ambiente e Chaves de API
-O projeto exige chaves de autenticação que NUNCA devem ser "comitadas" no GitHub.
+	python main.py
 
-Crie um arquivo chamado .env na raiz do projeto e solicite as chaves aos administradores do projeto (ou gere as suas próprias para testes isolados). O arquivo deve ter a seguinte estrutura:
+O bot inicia o polling do Telegram e cria ou atualiza o banco SQLite automaticamente.
 
-# Token gerado pelo BotFather no Telegram
-TELEGRAM_BOT_TOKEN=insira_o_token_aqui
+4. Comandos e interações
 
-# Chave gerada no Google AI Studio
-GEMINI_API_KEY=insira_a_chave_aqui
+- `/start`: apresenta o assistente.
+- `/despensa`: lista os itens cadastrados e mostra ações de consumo.
+- Texto: interpreta operações como adicionar, consumir e consultar itens.
+- Foto: extrai os itens da nota fiscal e os adiciona à despensa.
+- Botões: permitem consumir uma quantidade, consumir tudo ou cancelar.
 
+5. Lembretes
 
-4. Estrutura da Arquitetura
-O código foi desenhado de forma modular para separar as responsabilidades e facilitar a manutenção em grupo.
+O bot verifica lembretes a cada hora, somente entre 9h e 20h. Ele envia no máximo um lembrete por usuário em cada rodada.
 
-main.py: O ponto de entrada da aplicação. Ele inicializa o bot, registra as rotas e o mantém rodando.
+Cadências padrão:
 
-config.py: Responsável por carregar e validar as variáveis de ambiente (arquivo .env).
+- Laticínios e hortifruti: 5 dias.
+- Outros: 7 dias.
+- Mercearia e doces: 15 dias.
+- Limpeza: 30 dias.
 
-handlers.py: A camada de interface. Recebe as mensagens e fotos do Telegram e devolve as respostas formatadas ao usuário.
+Cada lembrete oferece as opções `Ainda tenho`, `Usei um pouco`, `Acabou` e `Lembrar depois`. O adiamento padrão é de 7 dias e o mesmo item não é lembrado novamente antes de 14 dias.
 
-ai_service.py: O núcleo de inteligência. Recebe as imagens em bytes, monta o prompt rigoroso e faz a chamada para o modelo Gemini 3.5 Flash Lite, garantindo o retorno em JSON.
+Para usar o agendamento, a dependência `python-telegram-bot[job-queue]` deve estar instalada através do `requirements.txt`.
 
-5. Como Executar
-Com o ambiente virtual ativado e o arquivo .env configurado, basta rodar:
+6. Estrutura do projeto
 
-python main.py
-O terminal exibirá a mensagem indicando que o bot está rodando. Abra o Telegram, envie o comando /start para o bot e teste o envio de uma nota fiscal.
+- `main.py`: inicializa o bot, registra handlers e agenda os lembretes.
+- `config.py`: carrega e valida as variáveis do `.env`.
+- `handlers/telegram.py`: recebe eventos do Telegram e formata as respostas.
+- `handlers/core.py`: contém as regras de negócio da despensa e dos lembretes.
+- `database/database.py`: cria o SQLite e executa as operações de persistência.
+- `ai_config/ai_service.py`: chama o Gemini e interpreta respostas JSON.
+- `despensa.db`: banco local criado em tempo de execução.
 
-6. Próximos Passos (Roadmap)
-Nossa próxima grande etapa de desenvolvimento envolverá a modelagem do banco de dados relacional (PostgreSQL). Iremos criar as tabelas Usuario, NotaFiscal e ItemDespensa, garantindo que os dados extraídos pelo Gemini sejam armazenados, estruturados e vinculados ao ID de cada usuário do Telegram.
+7. Teste rápido dos lembretes
+
+Cadastre um item pelo bot e obtenha o seu `telegram_id`. Depois, ajuste a data de adição para tornar o item elegível. Substitua `SEU_ID` e `ID_DO_ITEM` pelos valores corretos:
+
+	python -c "import sqlite3; from datetime import datetime, timedelta; conn=sqlite3.connect('despensa.db'); conn.execute(\"UPDATE itens_despensa SET data_adicao=?, ultimo_consumo=NULL, ultimo_lembrete=NULL, lembrar_depois=NULL WHERE id=? AND telegram_id=?\", ((datetime.now()-timedelta(days=6)).strftime('%Y-%m-%d %H:%M:%S'), ID_DO_ITEM, SEU_ID)); conn.commit(); conn.close()"
+
+Inicie o bot. O lembrete será enviado na próxima execução do job, desde que o horário local esteja entre 9h e 20h.
+
+Para testar mais rapidamente durante o desenvolvimento, altere temporariamente em `main.py` `first=60` para `first=5` e `interval=3600` para `interval=30`. Depois restaure os valores originais.

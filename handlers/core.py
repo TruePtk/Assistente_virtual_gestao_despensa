@@ -2,15 +2,64 @@
 
 import re
 import unicodedata
+from datetime import datetime, timezone
 from difflib import SequenceMatcher
 
 import ai_config.ai_service as ai_service
 import database.database as database
 
+CADENCIA_LEMBRETES_DIAS = {
+    "Laticínios": 5,
+    "Hortifruti": 5,
+    "Outros": 7,
+    "Mercearia": 15,
+    "Doces e Guloseimas": 15,
+    "Limpeza": 30,
+}
+
 
 def obter_itens_despensa(user_id: int):
     """Retorna os itens da despensa de um usuário."""
     return database.obter_despensa(user_id)
+
+
+def obter_proximo_lembrete(user_id: int):
+    """Escolhe o item mais antigo que já pode gerar um lembrete."""
+    agora = datetime.now(timezone.utc).replace(tzinfo=None)
+    for item in database.obter_itens_para_lembrete(user_id):
+        data_base = item[6] or item[5]
+        try:
+            data_base = datetime.fromisoformat(data_base)
+        except (TypeError, ValueError):
+            continue
+
+        categoria = item[9] or "Outros"
+        dias = CADENCIA_LEMBRETES_DIAS.get(categoria, 7)
+        if (agora - data_base).days < dias:
+            continue
+
+        ultimo_lembrete = item[7]
+        if ultimo_lembrete:
+            try:
+                ultimo_lembrete = datetime.fromisoformat(ultimo_lembrete)
+            except ValueError:
+                continue
+            if (agora - ultimo_lembrete).days < 14:
+                continue
+        return item
+    return None
+
+
+def registrar_lembrete(item_id: int, user_id: int) -> bool:
+    return database.registrar_lembrete(item_id, user_id)
+
+
+def adiar_lembrete(item_id: int, user_id: int) -> bool:
+    return database.adiar_lembrete(item_id, user_id)
+
+
+def obter_usuarios():
+    return database.obter_usuarios()
 
 
 def _normalizar_nome(nome: str) -> str:
@@ -87,6 +136,8 @@ def interpretar_mensagem(texto: str, user_id: int, user_nome: str = "") -> dict:
     for operacao in operacoes:
         acao = operacao.get("acao")
 
+        if acao == "erro":
+            return {"acao": "erro", "resposta": "Não consegui entender sua solicitação."}
         if acao == "consumir":
             nome = operacao.get("item_alvo", "")
             if _normalizar_nome(nome) == "tudo":
@@ -122,6 +173,8 @@ def interpretar_mensagem(texto: str, user_id: int, user_nome: str = "") -> dict:
             respostas.append(intencao.get("resposta", intencao.get("Obs", "Não consegui entender sua dúvida.")))
         elif acao == "consultar":
             return {"acao": "consultar", "itens": obter_itens_despensa(user_id)}
+        else:
+            respostas.append("Não reconheci essa operação.")
 
     if user_nome:
         database.cadastrar_usuario(user_id, user_nome)

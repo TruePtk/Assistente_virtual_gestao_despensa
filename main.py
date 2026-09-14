@@ -13,11 +13,17 @@ logging.basicConfig(
 def main():
 
     # Inicializa a aplicação do bot
-    app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+    app = (
+        ApplicationBuilder()
+        .token(TELEGRAM_BOT_TOKEN)
+        .concurrent_updates(True)
+        .build()
+    )
 
     # Registra os manipuladores (Handlers)
     app.add_handler(CommandHandler("start", handlers.start_command))
     app.add_handler(CommandHandler("despensa", handlers.listar_despensa))
+    app.job_queue.run_repeating(handlers.verificar_lembretes, interval=3600, first=60)
     
     # Filtra mensagens que contêm fotos
     app.add_handler(MessageHandler(filters.PHOTO, handlers.handle_photo))

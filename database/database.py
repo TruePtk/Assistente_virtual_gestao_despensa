@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import math
 
 # O banco de dados será salvo neste arquivo local
 DB_FILE = "despensa.db"
@@ -36,10 +37,18 @@ def inicializar_banco():
                 unidade_medida TEXT,
                 categoria_id INTEGER,
                 data_adicao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                ultimo_consumo TIMESTAMP,
+                ultimo_lembrete TIMESTAMP,
+                lembrar_depois TIMESTAMP,
                 FOREIGN KEY (telegram_id) REFERENCES usuarios (telegram_id),
                 FOREIGN KEY (categoria_id) REFERENCES categorias (id)
             )
         ''')
+
+        colunas = {linha[1] for linha in cursor.execute("PRAGMA table_info(itens_despensa)")}
+        for coluna in ("ultimo_consumo", "ultimo_lembrete", "lembrar_depois"):
+            if coluna not in colunas:
+                cursor.execute(f"ALTER TABLE itens_despensa ADD COLUMN {coluna} TIMESTAMP")
         
         # Insere categorias padrão se a tabela estiver vazia
         cursor.execute("SELECT COUNT(*) FROM categorias")
@@ -68,8 +77,12 @@ def salvar_item_despensa(telegram_id: int, nome_produto: str, quantidade: float,
         cursor.execute("SELECT id FROM categorias WHERE nome = ?", (nome_categoria,))
         resultado_cat = cursor.fetchone()
         
-        # Se não achar a categoria exata, joga para 'Outros' (que é o ID 6 na nossa lista acima)
-        categoria_id = resultado_cat[0] if resultado_cat else 6 
+        if resultado_cat:
+            categoria_id = resultado_cat[0]
+        else:
+            cursor.execute("SELECT id FROM categorias WHERE nome = 'Outros'")
+            categoria_outros = cursor.fetchone()
+            categoria_id = categoria_outros[0] if categoria_outros else None
         
         # Insere o produto
         cursor.execute('''
@@ -85,7 +98,11 @@ def adicionar_quantidade_item(item_id: int, telegram_id: int, quantidade: float)
         cursor = conn.cursor()
         cursor.execute('''
             UPDATE itens_despensa
-            SET quantidade = quantidade + ?
+            SET quantidade = quantidade + ?,
+                data_adicao = CURRENT_TIMESTAMP,
+                ultimo_consumo = NULL,
+                ultimo_lembrete = NULL,
+                lembrar_depois = NULL
             WHERE id = ? AND telegram_id = ?
         ''', (quantidade, item_id, telegram_id))
         conn.commit()
@@ -102,6 +119,55 @@ def obter_despensa(telegram_id: int):
             WHERE telegram_id = ?
         ''', (telegram_id,))
         return cursor.fetchall()
+
+def obter_usuarios():
+    """Retorna os usuários cadastrados para as tarefas recorrentes."""
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT telegram_id FROM usuarios")
+        return [linha[0] for linha in cursor.fetchall()]
+
+def obter_itens_para_lembrete(telegram_id: int):
+    """Retorna itens ativos cujo adiamento já terminou."""
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT i.id, i.telegram_id, i.nome_produto, i.quantidade,
+                   i.unidade_medida, i.data_adicao, i.ultimo_consumo,
+                   i.ultimo_lembrete, i.lembrar_depois, c.nome
+            FROM itens_despensa AS i
+            LEFT JOIN categorias AS c ON c.id = i.categoria_id
+            WHERE i.telegram_id = ?
+              AND i.quantidade > 0
+              AND (i.lembrar_depois IS NULL OR i.lembrar_depois <= CURRENT_TIMESTAMP)
+            ORDER BY i.data_adicao ASC
+        ''', (telegram_id,))
+        return cursor.fetchall()
+
+def registrar_lembrete(item_id: int, telegram_id: int) -> bool:
+    """Registra que um lembrete foi enviado para o item."""
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE itens_despensa
+            SET ultimo_lembrete = CURRENT_TIMESTAMP
+            WHERE id = ? AND telegram_id = ?
+        ''', (item_id, telegram_id))
+        conn.commit()
+        return cursor.rowcount > 0
+
+def adiar_lembrete(item_id: int, telegram_id: int, dias: int = 7) -> bool:
+    """Adia o próximo lembrete do item."""
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE itens_despensa
+            SET ultimo_lembrete = CURRENT_TIMESTAMP,
+                lembrar_depois = datetime('now', ?)
+            WHERE id = ? AND telegram_id = ?
+        ''', (f"+{dias} days", item_id, telegram_id))
+        conn.commit()
+        return cursor.rowcount > 0
 
 def esvaziar_despensa(telegram_id: int) -> int:
     """Remove todos os itens da despensa do usuário e retorna a quantidade removida."""
@@ -146,13 +212,18 @@ def consumir_quantidade_item(item_id: int, telegram_id: int, quantidade_subtrair
         nome, qtd_atual = item
 
         if quantidade_subtrair == 'TUDO':
-            cursor.execute("DELETE FROM itens_despensa WHERE id = ?", (item_id,))
+            cursor.execute(
+                "DELETE FROM itens_despensa WHERE id = ? AND telegram_id = ?",
+                (item_id, telegram_id),
+            )
             conn.commit()
             return f"Você consumiu todo o estoque de {nome}. Item removido!"
             
         try:
             # Converte a quantidade para float para fazer a matemática
             qtd_sub = float(quantidade_subtrair)
+            if not math.isfinite(qtd_sub) or qtd_sub <= 0:
+                return "A quantidade consumida deve ser maior que zero."
             nova_qtd = qtd_atual - qtd_sub
             
             if nova_qtd <= 0:
@@ -160,7 +231,12 @@ def consumir_quantidade_item(item_id: int, telegram_id: int, quantidade_subtrair
                 conn.commit()
                 return f"Estoque de {nome} zerado e removido da despensa!"
             else:
-                cursor.execute("UPDATE itens_despensa SET quantidade = ? WHERE id = ?", (nova_qtd, item_id))
+                cursor.execute('''
+                    UPDATE itens_despensa
+                    SET quantidade = ?, ultimo_consumo = CURRENT_TIMESTAMP,
+                        ultimo_lembrete = NULL, lembrar_depois = NULL
+                    WHERE id = ? AND telegram_id = ?
+                ''', (nova_qtd, item_id, telegram_id))
                 conn.commit()
                 return f"Baixa registrada! Restam {nova_qtd:.2f} de {nome}."
         except ValueError:

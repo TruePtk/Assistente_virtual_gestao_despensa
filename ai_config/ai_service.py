@@ -46,7 +46,6 @@ def processar_nota_fiscal(foto_bytes: bytearray) -> dict:
         }
       ]
     }
-    Lembre o usuário dos comandos disponíveis: /despensa para ver a lista.
     """
     
     try:
@@ -101,8 +100,6 @@ def interpretar_intencao_usuario(texto_usuario: str) -> dict:
         Para "consultar", não inclua item_alvo.
         Para "duvida_geral", inclua uma operação com "acao": "duvida_geral" e uma chave "resposta" com a resposta do bot.
         Não misture uma dúvida geral com operações de despensa.
-        Lembre o usuário dos comandos disponíveis: /despensa para ver a lista.
-
         Mensagem: "{texto_usuario}"
     """
     
