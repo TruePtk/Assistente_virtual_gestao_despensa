@@ -6,6 +6,25 @@ from config import GEMINI_API_KEY
 # A nova biblioteca usa um Client instanciado
 client = genai.Client(api_key=GEMINI_API_KEY)
 
+
+def enviar_prompt_para_ia(prompt: str, partes: list | None = None) -> str:
+    """Envia um prompt ao Gemini, usando o segundo modelo como fallback."""
+    contents = [prompt, *(partes or [])]
+    ultimo_erro = None
+
+    for modelo in ("gemini-3.1-flash-lite", "gemini-3.5-flash-lite"):
+        try:
+            resposta = client.models.generate_content(
+                model=modelo,
+                contents=contents,
+            )
+            return resposta.text
+        except Exception as erro:
+            ultimo_erro = erro
+
+    raise RuntimeError(f"Erro ao comunicar com a IA: {ultimo_erro}") from ultimo_erro
+
+
 def processar_nota_fiscal(foto_bytes: bytearray) -> dict:
     """Envia a imagem da nota para o Gemini e retorna um dicionário (JSON) dos itens."""
     
@@ -27,28 +46,22 @@ def processar_nota_fiscal(foto_bytes: bytearray) -> dict:
         }
       ]
     }
+    Lembre o usuário dos comandos disponíveis: /despensa para ver a lista.
     """
     
     try:
-        # Faz a chamada usando o novo padrão da API, já corrigindo o erro do bytearray
-        resposta = client.models.generate_content(
-            model='gemini-3.1-flash-lite',
-            contents=[
-                prompt,
+        texto_limpo = enviar_prompt_para_ia(
+            prompt,
+            [
                 types.Part.from_bytes(
-                    data=bytes(foto_bytes), # Conversão feita aqui!
-                    mime_type='image/jpeg'
+                    data=bytes(foto_bytes),
+                    mime_type="image/jpeg",
                 )
-            ]
+            ],
         )
-        
-        # Limpa possível formatação markdown
-        texto_limpo = resposta.text.replace("```json", "").replace("```", "").strip()
-        dados_estruturados = json.loads(texto_limpo)
-        return dados_estruturados
-        
+        return json.loads(texto_limpo.replace("```json", "").replace("```", "").strip())
     except json.JSONDecodeError:
-        return {"erro": "Não foi possível extrair um JSON válido.", "raw": resposta.text}
+        return {"erro": "Não foi possível extrair um JSON válido.", "raw": texto_limpo}
     except Exception as e:
         return {"erro": f"Erro na comunicação com a API: {str(e)}"}
 
@@ -88,29 +101,14 @@ def interpretar_intencao_usuario(texto_usuario: str) -> dict:
         Para "consultar", não inclua item_alvo.
         Para "duvida_geral", inclua uma operação com "acao": "duvida_geral" e uma chave "resposta" com a resposta do bot.
         Não misture uma dúvida geral com operações de despensa.
+        Lembre o usuário dos comandos disponíveis: /despensa para ver a lista.
 
         Mensagem: "{texto_usuario}"
     """
     
     try:
-        resposta = client.models.generate_content(
-            model='gemini-3.1-flash-lite', # ou o 3.5 flash lite que você validou
-            contents=[prompt]
-        )
-        print(resposta.text)  # Adicionei isso para depuração
-        
-        texto_limpo = resposta.text.replace("```json", "").replace("```", "").strip()
+        texto_limpo = enviar_prompt_para_ia(prompt).replace("```json", "").replace("```", "").strip()
         return json.loads(texto_limpo)
-    except Exception:
-        try:
-            resposta = client.models.generate_content(
-                        model='gemini-3.5-flash-lite', # ou o 3.5 flash lite que você validou
-                        contents=[prompt]
-                    )
-
-            print(resposta.text)  # Adicionei isso para depuração
-            texto_limpo = resposta.text.replace("```json", "").replace("```", "").strip()
-            return json.loads(texto_limpo)
-        except Exception:
-            print(f"Erro ao interpretar a intenção do usuário: {resposta.text}")
-            return {"acao": "erro", "item_alvo": None}
+    except Exception as e:
+        print(f"Erro ao interpretar a intenção do usuário: {e}")
+        return {"acao": "erro", "item_alvo": None}

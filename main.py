@@ -17,6 +17,7 @@ def main():
 
     # Registra os manipuladores (Handlers)
     app.add_handler(CommandHandler("start", handlers.start_command))
+    app.add_handler(CommandHandler("despensa", handlers.listar_despensa))
     
     # Filtra mensagens que contêm fotos
     app.add_handler(MessageHandler(filters.PHOTO, handlers.handle_photo))

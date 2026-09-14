@@ -5,7 +5,6 @@ from telegram.ext import ContextTypes
 
 from handlers import core
 
-
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     mensagem = (
         "Olá! Sou seu assistente de despensa inteligente. 🥫\n\n"
