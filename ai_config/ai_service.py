@@ -64,6 +64,34 @@ def processar_nota_fiscal(foto_bytes: bytearray) -> dict:
     except Exception as e:
         return {"erro": f"Erro na comunicação com a API: {str(e)}"}
 
+
+def processar_consulta_nfce(texto_pagina: str) -> dict:
+    """Extrai itens do texto visível retornado pela consulta pública da NFC-e."""
+    prompt = f"""
+    Extraia os produtos da tabela de itens de uma consulta pública de NFC-e.
+    Use somente informações explícitas no texto da página; não invente produtos,
+    quantidades, unidades ou categorias. Ignore emitente, pagamentos, tributos,
+    totais, mensagens de erro e itens que não estejam listados como produtos.
+
+    Retorne somente JSON válido neste formato:
+    {{"itens":[{{"nome":"Arroz","quantidade":1,"unidade_medida":"unidade","categoria":"Mercearia"}}]}}
+
+    Categorias permitidas: Mercearia, Laticínios, Hortifruti, Limpeza,
+    Doces e Guloseimas, Outros. Se a página não mostrar itens de forma legível,
+    retorne {{"erro":"A consulta não apresentou itens legíveis."}}.
+
+    Texto visível da consulta:
+    {texto_pagina[:50000]}
+    """
+    try:
+        texto_limpo = enviar_prompt_para_ia(prompt).replace("```json", "").replace("```", "").strip()
+        resultado = json.loads(texto_limpo)
+        if not isinstance(resultado, dict):
+            return {"erro": "A IA retornou um formato inválido para os itens da NFC-e."}
+        return resultado
+    except Exception as e:
+        return {"erro": f"Não consegui interpretar os itens da consulta NFC-e: {e}"}
+
 def interpretar_intencao_usuario(texto_usuario: str) -> dict:
     """Usa o Gemini para entender o que o usuário quer fazer com a despensa."""
     

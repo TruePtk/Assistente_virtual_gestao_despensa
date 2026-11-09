@@ -41,7 +41,9 @@ O bot inicia o polling do Telegram e cria ou atualiza o banco SQLite automaticam
 - `/start`: apresenta o assistente.
 - `/despensa`: lista os itens cadastrados e mostra ações de consumo.
 - Texto: interpreta operações como adicionar, consumir e consultar itens.
-- Foto: extrai os itens da nota fiscal e os adiciona à despensa.
+- Foto da nota: extrai os itens por visão computacional e os adiciona à despensa.
+- Foto do QR Code da NFC-e: consulta a página oficial e extrai os itens retornados.
+  Se a imagem não contiver um QR Code de NFC-e reconhecível, o bot tenta a leitura por foto.
 - Botões: permitem consumir uma quantidade, consumir tudo ou cancelar.
 
 5. Lembretes
@@ -67,6 +69,7 @@ Para usar o agendamento, a dependência `python-telegram-bot[job-queue]` deve es
 - `handlers/core.py`: contém as regras de negócio da despensa e dos lembretes.
 - `database/database.py`: cria o SQLite e executa as operações de persistência.
 - `ai_config/ai_service.py`: chama o Gemini e interpreta respostas JSON.
+- `nfc_e_service.py`: decodifica QR Codes de NFC-e e consulta páginas oficiais `.gov.br`.
 - `despensa.db`: banco local criado em tempo de execução.
 
 7. Teste rápido dos lembretes
