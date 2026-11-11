@@ -1,5 +1,6 @@
 """Casos de uso da despensa, sem dependência de uma plataforma de mensagens."""
 
+import math
 import re
 import unicodedata
 from datetime import datetime, timezone
@@ -189,14 +190,36 @@ def interpretar_mensagem(texto: str, user_id: int, user_nome: str = "") -> dict:
 
 
 def processar_nota(foto_bytes: bytearray, user_id: int, user_nome: str) -> dict:
-    """Processa uma nota e salva os itens extraídos."""
+    """Processa uma nota e salva os itens extraídos, ignorando itens inválidos."""
     resultado = ai_service.processar_nota_fiscal(foto_bytes)
+    if not isinstance(resultado, dict):
+        return {"erro": "A IA retornou um formato inválido para a nota."}
     if "erro" in resultado:
         return resultado
 
+    itens = resultado.get("itens")
+    itens_validos = []
+    for item in itens if isinstance(itens, list) else []:
+        if not isinstance(item, dict) or not _normalizar_nome(str(item.get("nome") or "")):
+            continue
+        try:
+            quantidade = float(str(item["quantidade"]).replace(",", "."))
+        except (KeyError, TypeError, ValueError):
+            continue
+        if not math.isfinite(quantidade) or quantidade <= 0:
+            continue
+        itens_validos.append({
+            "nome": str(item["nome"]).strip(),
+            "quantidade": int(quantidade) if quantidade.is_integer() else quantidade,
+            "unidade_medida": str(item.get("unidade_medida") or "unidade"),
+            "categoria": item.get("categoria") or "Outros",
+        })
+    if not itens_validos:
+        return {"erro": "Não encontrei itens válidos na nota fiscal."}
+
     database.cadastrar_usuario(user_id, user_nome)
     avisos = []
-    for item in resultado.get("itens", []):
+    for item in itens_validos:
         _, erro = _adicionar_item(
             user_id,
             {
@@ -208,6 +231,7 @@ def processar_nota(foto_bytes: bytearray, user_id: int, user_nome: str) -> dict:
         )
         if erro:
             avisos.append(erro)
+    resultado["itens"] = itens_validos
     if avisos:
         resultado["avisos"] = avisos
     return resultado

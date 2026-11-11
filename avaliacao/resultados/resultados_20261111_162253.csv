@@ -1,0 +1,31 @@
+﻿execucao;id;categoria;mensagem;acoes_esperadas;acoes_obtidas;intencao_ok;estado_ok;acerto;item_inventado;divergencias;tipo_erro;tempo_s;resposta_bot
+1;1;consulta;tenho arroz?;consultar;consultar;True;True;True;False;;;2.82;[lista com 16 itens]
+1;2;consulta;ainda tem leite em casa?;consultar;consultar;True;True;True;False;;;8.37;[lista com 16 itens]
+1;3;consulta;o que tem na despensa?;consultar;consultar;True;True;True;False;;;23.05;[lista com 16 itens]
+1;4;consulta;me mostra minha despensa;consultar;consultar;True;True;True;False;;;3.5;[lista com 16 itens]
+1;5;consulta;tem ovo?;consultar;consultar;True;True;True;False;;;1.62;[lista com 16 itens]
+1;6;consulta;quantos leites eu tenho?;consultar;consultar;True;True;True;False;;;3.9;[lista com 16 itens]
+1;7;ausencia;tenho caviar?;consultar;consultar;True;True;True;False;;;11.13;[lista com 16 itens]
+1;8;ausencia;ainda tenho salmão?;consultar;consultar;True;True;True;False;;;2.14;[lista com 16 itens]
+1;9;ausencia;tem sorvete em casa?;consultar;consultar;True;True;True;False;;;3.32;[lista com 16 itens]
+1;10;ausencia;o que já acabou?;consultar;consultar;True;True;True;False;;;53.05;[lista com 16 itens]
+1;11;consumo;usei 2 ovos;consumir;consumir;True;True;True;False;;;0.88;Baixa registrada! Restam 10.00 de Ovos.
+1;12;consumo;acabei de tomar 1 litro de leite;consumir;consumir;True;True;True;False;;;14.17;Baixa registrada! Restam 3.00 de Leite.
+1;13;consumo;comi 1 banana;consumir;consumir;True;True;True;False;;;0.77;Baixa registrada! Restam 5.00 de Banana.
+1;14;consumo;gastei todo o detergente;consumir;consumir;True;True;True;False;;;1.04;Você consumiu todo o estoque de Detergente. Item removido!
+1;15;consumo;consumi 1 kg de arroz;consumir;consumir;True;True;True;False;;;1.41;Baixa registrada! Restam 1.00 de Arroz.
+1;16;consumo;terminei o iogurte;consumir;consumir;True;True;True;False;;;0.85;Você consumiu todo o estoque de Iogurte Natural. Item removido!
+1;17;consumo;usei 3 tomates;consumir;consumir;True;True;True;False;;;0.84;Baixa registrada! Restam 2.00 de Tomate.
+1;18;consumo;usei leite;consumir;consumir;True;True;True;False;;;0.99;Baixa registrada! Restam 3.00 de Leite.
+1;19;adicionar;comprei 2 kg de arroz;adicionar;adicionar;True;True;True;False;;;0.79;Adicionado: 2 kg de Arroz.
+1;20;adicionar;comprei 6 ovos;adicionar;adicionar;True;True;True;False;;;1.22;Adicionado: 6 unidade de Ovos.
+1;21;adicionar;comprei 1 kg de farinha de trigo;adicionar;adicionar;True;True;True;False;;;1.05;Adicionado: 1 kg de farinha de trigo.
+1;22;adicionar;adicionei 2 pacotes de café;adicionar;adicionar;True;True;True;False;;;1.45;Adicionado: 2 pacotes de café.
+1;23;adicionar;comprei 12 latas de refrigerante;adicionar;adicionar;True;True;True;False;;;0.8;Adicionado: 12 latas de refrigerante.
+1;24;adicionar;comprei uma dúzia de ovos;adicionar;adicionar;True;True;True;False;;;0.94;Adicionado: 12 unidade de Ovos.
+1;25;composta;comi 2 bananas e comprei 1 kg de feijão;consumir|adicionar;adicionar|consumir;True;True;True;False;;;0.99;Baixa registrada! Restam 4.00 de Banana. / Adicionado: 1 kg de Feijão.
+1;26;composta;usei 1 cebola e 2 tomates;consumir|consumir;consumir|consumir;True;True;True;False;;;35.36;Baixa registrada! Restam 2.00 de Cebola. / Baixa registrada! Restam 3.00 de Tomate.
+1;27;composta;tomei 1 litro de leite, comprei 2 kg de arroz e 1 detergente;consumir|adicionar|adicionar;adicionar|adicionar|consumir;True;True;True;False;;;1.6;Baixa registrada! Restam 3.00 de Leite. / Adicionado: 2 kg de Arroz. / Adicionado: 1 unidade de Detergente.
+1;28;composta;acabou o chocolate e comprei 2 biscoitos recheados;consumir|adicionar;adicionar|consumir;True;True;True;False;;;2.73;Você consumiu todo o estoque de Chocolate. Item removido! / Adicionado: 2 unidades de Biscoito Recheado.
+1;29;composta;comprei 3 pacotes de macarrão e usei 1 ovo;adicionar|consumir;adicionar|consumir;True;True;True;False;;;1.99;Adicionado: 3 pacotes de Macarrão. / Baixa registrada! Restam 11.00 de Ovos.
+1;30;composta;vê o que tem de leite e depois usa 1 ovo;consultar|consumir;consultar|consumir;True;True;True;False;;;1.29;[lista com 16 itens]
