@@ -2,13 +2,11 @@
 
 import re
 import unicodedata
-import math
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
 
 import ai_config.ai_service as ai_service
 import database.database as database
-import nfc_e_service
 
 CADENCIA_LEMBRETES_DIAS = {
     "Laticínios": 5,
@@ -190,30 +188,15 @@ def interpretar_mensagem(texto: str, user_id: int, user_nome: str = "") -> dict:
     return {"acao": "resposta", "resposta": "\n".join(respostas)}
 
 
-def _salvar_itens_nota(resultado: dict, user_id: int, user_nome: str) -> dict:
-    """Salva itens extraídos por qualquer fonte de nota fiscal."""
-    itens = resultado.get("itens", [])
-    if not isinstance(itens, list) or not itens:
-        return {"erro": "Não encontrei itens legíveis na nota fiscal."}
+def processar_nota(foto_bytes: bytearray, user_id: int, user_nome: str) -> dict:
+    """Processa uma nota e salva os itens extraídos."""
+    resultado = ai_service.processar_nota_fiscal(foto_bytes)
+    if "erro" in resultado:
+        return resultado
+
     database.cadastrar_usuario(user_id, user_nome)
     avisos = []
-    itens_validos = []
-    for item in itens:
-        if not isinstance(item, dict) or not item.get("nome"):
-            continue
-        try:
-            quantidade = float(str(item["quantidade"]).replace(",", "."))
-            if not math.isfinite(quantidade) or quantidade <= 0:
-                continue
-        except (KeyError, TypeError, ValueError):
-            continue
-        item = {
-            "nome": str(item["nome"]).strip(),
-            "quantidade": quantidade,
-            "unidade_medida": str(item.get("unidade_medida") or "unidade"),
-            "categoria": item.get("categoria") or "Outros",
-        }
-        itens_validos.append(item)
+    for item in resultado.get("itens", []):
         _, erro = _adicionar_item(
             user_id,
             {
@@ -225,44 +208,8 @@ def _salvar_itens_nota(resultado: dict, user_id: int, user_nome: str) -> dict:
         )
         if erro:
             avisos.append(erro)
-    if not itens_validos:
-        return {"erro": "A nota não apresentou produtos com nome e quantidade válidos."}
-    resultado["itens"] = itens_validos
     if avisos:
         resultado["avisos"] = avisos
-    return resultado
-
-
-def processar_nota(foto_bytes: bytearray, user_id: int, user_nome: str) -> dict:
-    """Processa uma foto de nota e salva os itens extraídos por visão computacional."""
-    resultado = ai_service.processar_nota_fiscal(foto_bytes)
-    if "erro" in resultado:
-        resultado["origem"] = "foto"
-        return resultado
-    resultado = _salvar_itens_nota(resultado, user_id, user_nome)
-    resultado["origem"] = "foto"
-    return resultado
-
-
-def processar_qrcode_nfce(foto_bytes: bytearray, user_id: int, user_nome: str) -> dict | None:
-    """Consulta NFC-e pelo QR da imagem; None indica que não havia QR reconhecível."""
-    try:
-        texto_pagina = nfc_e_service.obter_texto_consulta(foto_bytes)
-    except Exception as erro:
-        print(f"Falha na consulta NFC-e ({type(erro).__name__}).")
-        return {
-            "erro": "Não consegui consultar a NFC-e na SEFAZ. Tente novamente mais tarde.",
-            "origem": "qrcode",
-        }
-    if texto_pagina is None:
-        return None
-
-    resultado = ai_service.processar_consulta_nfce(texto_pagina)
-    if "erro" in resultado:
-        resultado["origem"] = "qrcode"
-        return resultado
-    resultado = _salvar_itens_nota(resultado, user_id, user_nome)
-    resultado["origem"] = "qrcode"
     return resultado
 
 

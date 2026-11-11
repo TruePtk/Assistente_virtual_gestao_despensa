@@ -172,39 +172,25 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
-    mensagem_espera = await update.message.reply_text("Recebi a imagem! 🔍 Verificando QR Code ou itens da nota...")
+    mensagem_espera = await update.message.reply_text("Recebi a nota! 🔍 Lendo os itens...")
     async with _obter_lock_usuario(user_id):
         foto = update.message.photo[-1]
         arquivo_foto = await context.bot.get_file(foto.file_id)
         foto_bytes = await arquivo_foto.download_as_bytearray()
         user = update.message.from_user
         resultado = await asyncio.to_thread(
-            core.processar_qrcode_nfce,
+            core.processar_nota,
             foto_bytes,
             user.id,
             user.first_name,
         )
-        if resultado is None:
-            resultado = await asyncio.to_thread(
-                core.processar_nota,
-                foto_bytes,
-                user.id,
-                user.first_name,
-            )
 
         if "erro" in resultado:
             print(f"\n[ERRO NA IA]: {resultado['erro']}\n")
-            if resultado.get("origem") == "qrcode":
-                await mensagem_espera.edit_text(
-                    "Consegui identificar um QR Code de NFC-e, mas não consegui extrair os itens da consulta da SEFAZ. "
-                    "Tente novamente ou envie uma foto da nota."
-                )
-            else:
-                await mensagem_espera.edit_text("Putz, não consegui ler essa nota com clareza. Pode mandar outra foto?")
+            await mensagem_espera.edit_text("Putz, não consegui ler essa nota com clareza. Pode mandar outra foto?")
             return
 
-        titulo = "✅ *Itens adicionados pela consulta QR Code:*\n\n" if resultado.get("origem") == "qrcode" else "✅ *Itens adicionados pela leitura da foto:*\n\n"
-        texto = titulo
+        texto = "✅ *Itens adicionados à sua despensa:*\n\n"
         for item in resultado.get("itens", []):
             texto += f"• {item['quantidade']} {item['unidade_medida']} de {item['nome']} ({item['categoria']})\n"
         if resultado.get("avisos"):
