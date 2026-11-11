@@ -135,6 +135,7 @@ def interpretar_mensagem(texto: str, user_id: int, user_nome: str = "") -> dict:
         return {"acao": "erro", "resposta": "Não consegui entender sua solicitação."}
 
     respostas = []
+    consultou = False
     for operacao in operacoes:
         acao = operacao.get("acao")
 
@@ -174,12 +175,18 @@ def interpretar_mensagem(texto: str, user_id: int, user_nome: str = "") -> dict:
         elif acao == "duvida_geral":
             respostas.append(intencao.get("resposta", intencao.get("Obs", "Não consegui entender sua dúvida.")))
         elif acao == "consultar":
-            return {"acao": "consultar", "itens": obter_itens_despensa(user_id)}
+            consultou = True
         else:
             respostas.append("Não reconheci essa operação.")
 
     if user_nome:
         database.cadastrar_usuario(user_id, user_nome)
+    if consultou:
+        return {
+            "acao": "consultar",
+            "itens": obter_itens_despensa(user_id),
+            "resposta": "\n".join(respostas),
+        }
     return {"acao": "resposta", "resposta": "\n".join(respostas)}
 
 

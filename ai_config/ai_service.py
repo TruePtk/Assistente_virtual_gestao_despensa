@@ -34,6 +34,7 @@ def processar_nota_fiscal(foto_bytes: bytearray) -> dict:
     
     Categorize os itens de forma lógica para uma despensa (ex: Laticínios, Limpeza, Hortifruti, Mercearia).
     Traduza abreviações comuns de mercado para o nome real do produto.
+    Padronize as unidades: use kg em vez de g e litro em vez de ml, convertendo o valor (ex.: 500 g = 0.5 kg).
     
     Formato esperado:
     {
@@ -72,6 +73,8 @@ def processar_consulta_nfce(texto_pagina: str) -> dict:
     Use somente informações explícitas no texto da página; não invente produtos,
     quantidades, unidades ou categorias. Ignore emitente, pagamentos, tributos,
     totais, mensagens de erro e itens que não estejam listados como produtos.
+
+    Se a unidade for g ou ml, converta para kg ou litro (ex.: 500 g = 0.5 kg).
 
     Retorne somente JSON válido neste formato:
     {{"itens":[{{"nome":"Arroz","quantidade":1,"unidade_medida":"unidade","categoria":"Mercearia"}}]}}
@@ -122,6 +125,8 @@ def interpretar_intencao_usuario(texto_usuario: str) -> dict:
         }}
 
         Para "consumir", use "quantidade" como número ou "TUDO".
+        Se o usuário disser que um item acabou ou terminou (ex.: "acabou o leite", "terminei o iogurte"), use "quantidade": "TUDO" para esse item.
+        Use sempre kg em vez de g e litro em vez de ml, convertendo o valor (ex.: 500 g = 0.5 kg, 250 ml = 0.25 litro).
         Quando o usuário quiser consumir tudo da despensa, retorne uma única operação
         com "acao": "consumir", "item_alvo": "tudo" e "quantidade": "TUDO".
         Para "adicionar", informe quantidade, unidade_medida e categoria.

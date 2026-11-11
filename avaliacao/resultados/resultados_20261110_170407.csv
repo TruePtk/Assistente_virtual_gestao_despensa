@@ -1,0 +1,6 @@
+﻿execucao;id;categoria;mensagem;acoes_esperadas;acoes_obtidas;intencao_ok;estado_ok;acerto;item_inventado;divergencias;tipo_erro;tempo_s;resposta_bot
+1;1;consulta;tenho arroz?;consultar;consultar;True;True;True;False;;;25.77;[lista com 16 itens]
+1;2;consulta;ainda tem leite em casa?;consultar;consultar;True;True;True;False;;;0.78;[lista com 16 itens]
+1;3;consulta;o que tem na despensa?;consultar;consultar;True;True;True;False;;;0.53;[lista com 16 itens]
+1;4;consulta;me mostra minha despensa;consultar;consultar;True;True;True;False;;;4.03;[lista com 16 itens]
+1;5;consulta;tem ovo?;consultar;consultar;True;True;True;False;;;21.04;[lista com 16 itens]

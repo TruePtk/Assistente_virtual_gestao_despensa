@@ -1,0 +1,40 @@
+﻿id;categoria;mensagem;acoes_esperadas;estado_esperado
+1;consulta;tenho arroz?;consultar;{}
+2;consulta;ainda tem leite em casa?;consultar;{}
+3;consulta;o que tem na despensa?;consultar;{}
+4;consulta;me mostra minha despensa;consultar;{}
+5;consulta;tem ovo?;consultar;{}
+6;consulta;quantos leites eu tenho?;consultar;{}
+7;ausencia;tenho caviar?;consultar;{}
+8;ausencia;ainda tenho salmão?;consultar;{}
+9;ausencia;tem sorvete em casa?;consultar;{}
+10;ausencia;o que já acabou?;consultar;{}
+11;consumo;usei 2 ovos;consumir;"{""Ovos"": 10}"
+12;consumo;acabei de tomar 1 litro de leite;consumir;"{""Leite"": 3}"
+13;consumo;comi 1 banana;consumir;"{""Banana"": 5}"
+14;consumo;gastei todo o detergente;consumir;"{""Detergente"": null}"
+15;consumo;consumi 1 kg de arroz;consumir;"{""Arroz"": 1}"
+16;consumo;terminei o iogurte;consumir;"{""Iogurte Natural"": null}"
+17;consumo;usei 3 tomates;consumir;"{""Tomate"": 2}"
+18;consumo;usei leite;consumir;"{""Leite"": 3}"
+19;adicionar;comprei 2 kg de arroz;adicionar;"{""Arroz"": 4}"
+20;adicionar;comprei 6 ovos;adicionar;"{""Ovos"": 18}"
+21;adicionar;comprei 1 kg de farinha de trigo;adicionar;"{""Farinha de Trigo"": 1}"
+22;adicionar;adicionei 2 pacotes de café;adicionar;"{""Café"": 2}"
+23;adicionar;comprei 12 latas de refrigerante;adicionar;"{""Refrigerante"": 12}"
+24;adicionar;comprei uma dúzia de ovos;adicionar;"{""Ovos"": 24}"
+25;composta;comi 2 bananas e comprei 1 kg de feijão;consumir|adicionar;"{""Banana"": 4, ""Feijão"": 2}"
+26;composta;usei 1 cebola e 2 tomates;consumir|consumir;"{""Cebola"": 2, ""Tomate"": 3}"
+27;composta;tomei 1 litro de leite, comprei 2 kg de arroz e 1 detergente;consumir|adicionar|adicionar;"{""Leite"": 3, ""Arroz"": 4, ""Detergente"": 3}"
+28;composta;acabou o chocolate e comprei 2 biscoitos recheados;consumir|adicionar;"{""Chocolate"": null, ""Biscoito Recheado"": 4}"
+29;composta;comprei 3 pacotes de macarrão e usei 1 ovo;adicionar|consumir;"{""Macarrão"": 6, ""Ovos"": 11}"
+30;composta;vê o que tem de leite e depois usa 1 ovo;consultar|consumir;"{""Ovos"": 11}"
+31;armadilha;usei 1 queijo;consumir;{}
+32;armadilha;comi 1 caviar;consumir;{}
+33;armadilha;comprei 500 g de arroz;adicionar;"{""Arroz"": 2.5}"
+34;armadilha;usei metade do feijão;consumir;"{""Feijão"": 0.5}"
+35;armadilha;qual é a capital da França?;duvida_geral;{}
+36;armadilha;me conta uma piada;duvida_geral;{}
+37;variacao;tem arros aí?;consultar;{}
+38;variacao;uzei 2 ovos;consumir;"{""Ovos"": 10}"
+39;variacao;cabou o detergente;consumir;"{""Detergente"": null}"

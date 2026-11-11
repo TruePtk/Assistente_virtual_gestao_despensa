@@ -161,7 +161,10 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
         if resultado["acao"] == "consultar":
-            await mensagem_espera.delete()
+            if resultado.get("resposta"):
+                await mensagem_espera.edit_text(resultado["resposta"])
+            else:
+                await mensagem_espera.delete()
             await _listar_despensa(update)
         else:
             await mensagem_espera.edit_text(resultado["resposta"])
