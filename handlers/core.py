@@ -98,8 +98,13 @@ def _encontrar_item(user_id: int, nome: str):
     return candidatos[0] if len(candidatos) == 1 else None
 
 
+def _normalizar_unidade(unidade: str | None) -> str:
+    unidade = str(unidade or "unidade").strip().casefold()
+    return {"un": "unidade", "unidades": "unidade", "litro": "l", "litros": "l"}.get(unidade, unidade)
+
+
 def _adicionar_item(user_id: int, operacao: dict):
-    """Soma um item existente ou cria um novo, recusando nomes ambíguos."""
+    """Soma unidade compatível ou cria item, recusando nomes ambíguos."""
     nome = operacao["item_alvo"]
     quantidade = float(operacao["quantidade"])
     candidatos = _encontrar_candidatos(user_id, nome)
@@ -108,6 +113,13 @@ def _adicionar_item(user_id: int, operacao: dict):
 
     if candidatos:
         item = candidatos[0]
+        unidade_atual = item[3] or "unidade"
+        unidade_nova = operacao.get("unidade_medida") or unidade_atual
+        if _normalizar_unidade(unidade_nova) != _normalizar_unidade(unidade_atual):
+            return None, (
+                f"Já existe {item[1]} cadastrado em {unidade_atual}; "
+                f"não somei a quantidade em {unidade_nova}."
+            )
         database.adicionar_quantidade_item(item[0], user_id, quantidade)
         return item[1], None
 

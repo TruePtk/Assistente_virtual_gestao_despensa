@@ -7,6 +7,9 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
 from handlers import core
+from site_web import tokens
+
+URL_SITE = "http://localhost:8000"
 
 _locks_por_usuario = defaultdict(asyncio.Lock)
 
@@ -22,6 +25,14 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "ou me pergunte o que podemos cozinhar com o que tem guardado."
     )
     await update.message.reply_text(mensagem)
+
+
+async def site_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Gera um link pessoal para consultar e editar a despensa no site."""
+    token = tokens.criar_token(update.effective_user.id)
+    await update.effective_message.reply_text(
+        f"Seu link pessoal (não compartilhe):\n{URL_SITE}/#t={token}"
+    )
 
 
 async def listar_despensa(update: Update, context: ContextTypes.DEFAULT_TYPE):
