@@ -1,0 +1,118 @@
+﻿execucao;id;categoria;mensagem;acoes_esperadas;acoes_obtidas;intencao_ok;estado_ok;acerto;item_inventado;divergencias;tipo_erro;tempo_s;resposta_bot
+1;1;consulta;tenho arroz?;consultar;consultar;True;True;True;False;;;0.89;[lista com 16 itens]
+1;2;consulta;ainda tem leite em casa?;consultar;consultar;True;True;True;False;;;0.66;[lista com 16 itens]
+1;3;consulta;o que tem na despensa?;consultar;consultar;True;True;True;False;;;0.69;[lista com 16 itens]
+1;4;consulta;me mostra minha despensa;consultar;consultar;True;True;True;False;;;0.63;[lista com 16 itens]
+1;5;consulta;tem ovo?;consultar;consultar;True;True;True;False;;;0.74;[lista com 16 itens]
+1;6;consulta;quantos leites eu tenho?;consultar;consultar;True;True;True;False;;;0.73;[lista com 16 itens]
+1;7;ausencia;tenho caviar?;consultar;consultar;True;True;True;False;;;5.5;[lista com 16 itens]
+1;8;ausencia;ainda tenho salmão?;consultar;consultar;True;True;True;False;;;0.82;[lista com 16 itens]
+1;9;ausencia;tem sorvete em casa?;consultar;consultar;True;True;True;False;;;0.76;[lista com 16 itens]
+1;10;ausencia;o que já acabou?;consultar;consultar;True;True;True;False;;;0.69;[lista com 16 itens]
+1;11;consumo;usei 2 ovos;consumir;consumir;True;True;True;False;;;0.68;Baixa registrada! Restam 10.00 de Ovos.
+1;12;consumo;acabei de tomar 1 litro de leite;consumir;consumir;True;True;True;False;;;0.78;Baixa registrada! Restam 3.00 de Leite.
+1;13;consumo;comi 1 banana;consumir;consumir;True;True;True;False;;;0.8;Baixa registrada! Restam 5.00 de Banana.
+1;14;consumo;gastei todo o detergente;consumir;consumir;True;True;True;False;;;0.77;Você consumiu todo o estoque de Detergente. Item removido!
+1;15;consumo;consumi 1 kg de arroz;consumir;consumir;True;True;True;False;;;0.78;Baixa registrada! Restam 1.00 de Arroz.
+1;16;consumo;terminei o iogurte;consumir;consumir;True;True;True;False;;;0.81;Você consumiu todo o estoque de Iogurte Natural. Item removido!
+1;17;consumo;usei 3 tomates;consumir;consumir;True;True;True;False;;;0.88;Baixa registrada! Restam 2.00 de Tomate.
+1;18;consumo;usei leite;consumir;consumir;True;True;True;False;;;0.84;Baixa registrada! Restam 3.00 de Leite.
+1;19;adicionar;comprei 2 kg de arroz;adicionar;adicionar;True;True;True;False;;;1.04;Adicionado: 2 kg de Arroz.
+1;20;adicionar;comprei 6 ovos;adicionar;adicionar;True;True;True;False;;;0.78;Adicionado: 6 None de Ovos.
+1;21;adicionar;comprei 1 kg de farinha de trigo;adicionar;adicionar;True;True;True;False;;;0.77;Adicionado: 1 kg de farinha de trigo.
+1;22;adicionar;adicionei 2 pacotes de café;adicionar;adicionar;True;True;True;False;;;0.72;Adicionado: 2 pacotes de café.
+1;23;adicionar;comprei 12 latas de refrigerante;adicionar;adicionar;True;True;True;False;;;0.89;Adicionado: 12 latas de refrigerante.
+1;24;adicionar;comprei uma dúzia de ovos;adicionar;adicionar;True;True;True;False;;;1.2;Adicionado: 12 None de Ovos.
+1;25;composta;comi 2 bananas e comprei 1 kg de feijão;consumir|adicionar;adicionar|consumir;True;True;True;False;;;0.96;Baixa registrada! Restam 4.00 de Banana. / Adicionado: 1 kg de Feijão.
+1;26;composta;usei 1 cebola e 2 tomates;consumir|consumir;consumir|consumir;True;True;True;False;;;1.33;Baixa registrada! Restam 2.00 de Cebola. / Baixa registrada! Restam 3.00 de Tomate.
+1;27;composta;tomei 1 litro de leite, comprei 2 kg de arroz e 1 detergente;consumir|adicionar|adicionar;adicionar|adicionar|consumir;True;True;True;False;;;0.92;Baixa registrada! Restam 3.00 de Leite. / Adicionado: 2 kg de Arroz. / Adicionado: 1 None de Detergente.
+1;28;composta;acabou o chocolate e comprei 2 biscoitos recheados;consumir|adicionar;adicionar|consumir;True;True;True;False;;;1.47;Você consumiu todo o estoque de Chocolate. Item removido! / Adicionado: 2 None de Biscoito Recheado.
+1;29;composta;comprei 3 pacotes de macarrão e usei 1 ovo;adicionar|consumir;adicionar|consumir;True;True;True;False;;;1.21;Adicionado: 3 pacotes de Macarrão. / Baixa registrada! Restam 11.00 de Ovos.
+1;30;composta;vê o que tem de leite e depois usa 1 ovo;consultar|consumir;consultar|consumir;True;True;True;False;;;1.08;[lista com 16 itens]
+1;31;armadilha;usei 1 queijo;consumir;consumir;True;True;True;False;;;0.65;Encontrei mais de um item parecido com queijo. Seja mais específico.
+1;32;armadilha;comi 1 caviar;consumir;consumir;True;True;True;False;;;1.19;Não encontrei caviar na sua despensa.
+1;33;armadilha;comprei 500 g de arroz;adicionar;adicionar;True;True;True;False;;;5.1;Adicionado: 0.5 kg de Arroz.
+1;34;armadilha;usei metade do feijão;consumir;consumir;True;True;True;False;;;1.13;Baixa registrada! Restam 0.50 de Feijão.
+1;35;armadilha;qual é a capital da França?;duvida_geral;duvida_geral;True;True;True;False;;;0.78;A capital da França é Paris.
+1;36;armadilha;me conta uma piada;duvida_geral;duvida_geral;True;True;True;False;;;0.82;Por que o computador foi preso? Porque ele executou um programa ilegal!
+1;37;variacao;tem arros aí?;consultar;consultar;True;True;True;False;;;0.69;[lista com 16 itens]
+1;38;variacao;uzei 2 ovos;consumir;consumir;True;True;True;False;;;0.69;Baixa registrada! Restam 10.00 de Ovos.
+1;39;variacao;cabou o detergente;consumir;consumir;True;True;True;False;;;0.76;Você consumiu todo o estoque de Detergente. Item removido!
+2;1;consulta;tenho arroz?;consultar;consultar;True;True;True;False;;;1.54;[lista com 16 itens]
+2;2;consulta;ainda tem leite em casa?;consultar;consultar;True;True;True;False;;;0.99;[lista com 16 itens]
+2;3;consulta;o que tem na despensa?;consultar;consultar;True;True;True;False;;;0.73;[lista com 16 itens]
+2;4;consulta;me mostra minha despensa;consultar;consultar;True;True;True;False;;;0.74;[lista com 16 itens]
+2;5;consulta;tem ovo?;consultar;consultar;True;True;True;False;;;1.07;[lista com 16 itens]
+2;6;consulta;quantos leites eu tenho?;consultar;consultar;True;True;True;False;;;0.63;[lista com 16 itens]
+2;7;ausencia;tenho caviar?;consultar;consultar;True;True;True;False;;;0.69;[lista com 16 itens]
+2;8;ausencia;ainda tenho salmão?;consultar;consultar;True;True;True;False;;;0.75;[lista com 16 itens]
+2;9;ausencia;tem sorvete em casa?;consultar;consultar;True;True;True;False;;;1.0;[lista com 16 itens]
+2;10;ausencia;o que já acabou?;consultar;consultar;True;True;True;False;;;0.6;[lista com 16 itens]
+2;11;consumo;usei 2 ovos;consumir;consumir;True;True;True;False;;;0.75;Baixa registrada! Restam 10.00 de Ovos.
+2;12;consumo;acabei de tomar 1 litro de leite;consumir;consumir;True;True;True;False;;;1.44;Baixa registrada! Restam 3.00 de Leite.
+2;13;consumo;comi 1 banana;consumir;consumir;True;True;True;False;;;0.72;Baixa registrada! Restam 5.00 de Banana.
+2;14;consumo;gastei todo o detergente;consumir;consumir;True;True;True;False;;;1.07;Você consumiu todo o estoque de Detergente. Item removido!
+2;15;consumo;consumi 1 kg de arroz;consumir;consumir;True;True;True;False;;;4.8;Baixa registrada! Restam 1.00 de Arroz.
+2;16;consumo;terminei o iogurte;consumir;consumir;True;True;True;False;;;1.3;Você consumiu todo o estoque de Iogurte Natural. Item removido!
+2;17;consumo;usei 3 tomates;consumir;consumir;True;True;True;False;;;0.7;Baixa registrada! Restam 2.00 de Tomate.
+2;18;consumo;usei leite;consumir;consumir;True;True;True;False;;;1.26;Baixa registrada! Restam 3.00 de Leite.
+2;19;adicionar;comprei 2 kg de arroz;adicionar;adicionar;True;True;True;False;;;0.8;Adicionado: 2 kg de Arroz.
+2;20;adicionar;comprei 6 ovos;adicionar;adicionar;True;True;True;False;;;1.5;Adicionado: 6 None de Ovos.
+2;21;adicionar;comprei 1 kg de farinha de trigo;adicionar;adicionar;True;True;True;False;;;1.53;Adicionado: 1 kg de farinha de trigo.
+2;22;adicionar;adicionei 2 pacotes de café;adicionar;adicionar;True;True;True;False;;;0.68;Adicionado: 2 pacotes de café.
+2;23;adicionar;comprei 12 latas de refrigerante;adicionar;adicionar;True;True;True;False;;;0.87;Adicionado: 12 latas de refrigerante.
+2;24;adicionar;comprei uma dúzia de ovos;adicionar;adicionar;True;True;True;False;;;0.86;Adicionado: 12 unidade de Ovos.
+2;25;composta;comi 2 bananas e comprei 1 kg de feijão;consumir|adicionar;adicionar|consumir;True;True;True;False;;;0.87;Baixa registrada! Restam 4.00 de Banana. / Adicionado: 1 kg de Feijão.
+2;26;composta;usei 1 cebola e 2 tomates;consumir|consumir;consumir|consumir;True;True;True;False;;;1.1;Baixa registrada! Restam 2.00 de Cebola. / Baixa registrada! Restam 3.00 de Tomate.
+2;27;composta;tomei 1 litro de leite, comprei 2 kg de arroz e 1 detergente;consumir|adicionar|adicionar;adicionar|adicionar|consumir;True;True;True;False;;;1.0;Baixa registrada! Restam 3.00 de Leite. / Adicionado: 2 kg de Arroz. / Adicionado: 1 None de Detergente.
+2;28;composta;acabou o chocolate e comprei 2 biscoitos recheados;consumir|adicionar;adicionar|consumir;True;True;True;False;;;0.75;Você consumiu todo o estoque de Chocolate. Item removido! / Adicionado: 2 None de Biscoito Recheado.
+2;29;composta;comprei 3 pacotes de macarrão e usei 1 ovo;adicionar|consumir;adicionar|consumir;True;True;True;False;;;0.94;Adicionado: 3 pacotes de Macarrão. / Baixa registrada! Restam 11.00 de Ovos.
+2;30;composta;vê o que tem de leite e depois usa 1 ovo;consultar|consumir;consultar|consumir;True;True;True;False;;;0.9;[lista com 16 itens]
+2;31;armadilha;usei 1 queijo;consumir;consumir;True;True;True;False;;;0.54;Encontrei mais de um item parecido com queijo. Seja mais específico.
+2;32;armadilha;comi 1 caviar;consumir;consumir;True;True;True;False;;;0.76;Não encontrei caviar na sua despensa.
+2;33;armadilha;comprei 500 g de arroz;adicionar;adicionar;True;True;True;False;;;1.04;Adicionado: 0.5 kg de Arroz.
+2;34;armadilha;usei metade do feijão;consumir;consumir;True;True;True;False;;;0.67;Baixa registrada! Restam 0.50 de Feijão.
+2;35;armadilha;qual é a capital da França?;duvida_geral;duvida_geral;True;True;True;False;;;0.67;A capital da França é Paris.
+2;36;armadilha;me conta uma piada;duvida_geral;duvida_geral;True;True;True;False;;;0.66;Por que o computador foi preso? Porque ele executou um programa ilegal!
+2;37;variacao;tem arros aí?;consultar;consultar;True;True;True;False;;;2.65;[lista com 16 itens]
+2;38;variacao;uzei 2 ovos;consumir;consumir;True;True;True;False;;;1.85;Baixa registrada! Restam 10.00 de Ovos.
+2;39;variacao;cabou o detergente;consumir;consumir;True;True;True;False;;;0.72;Você consumiu todo o estoque de Detergente. Item removido!
+3;1;consulta;tenho arroz?;consultar;consultar;True;True;True;False;;;0.71;[lista com 16 itens]
+3;2;consulta;ainda tem leite em casa?;consultar;consultar;True;True;True;False;;;1.42;[lista com 16 itens]
+3;3;consulta;o que tem na despensa?;consultar;consultar;True;True;True;False;;;1.54;[lista com 16 itens]
+3;4;consulta;me mostra minha despensa;consultar;consultar;True;True;True;False;;;1.32;[lista com 16 itens]
+3;5;consulta;tem ovo?;consultar;consultar;True;True;True;False;;;1.21;[lista com 16 itens]
+3;6;consulta;quantos leites eu tenho?;consultar;consultar;True;True;True;False;;;0.73;[lista com 16 itens]
+3;7;ausencia;tenho caviar?;consultar;consultar;True;True;True;False;;;1.77;[lista com 16 itens]
+3;8;ausencia;ainda tenho salmão?;consultar;consultar;True;True;True;False;;;0.69;[lista com 16 itens]
+3;9;ausencia;tem sorvete em casa?;consultar;consultar;True;True;True;False;;;1.21;[lista com 16 itens]
+3;10;ausencia;o que já acabou?;consultar;consultar;True;True;True;False;;;0.86;[lista com 16 itens]
+3;11;consumo;usei 2 ovos;consumir;consumir;True;True;True;False;;;0.73;Baixa registrada! Restam 10.00 de Ovos.
+3;12;consumo;acabei de tomar 1 litro de leite;consumir;consumir;True;True;True;False;;;0.74;Baixa registrada! Restam 3.00 de Leite.
+3;13;consumo;comi 1 banana;consumir;consumir;True;True;True;False;;;0.71;Baixa registrada! Restam 5.00 de Banana.
+3;14;consumo;gastei todo o detergente;consumir;consumir;True;True;True;False;;;0.63;Você consumiu todo o estoque de Detergente. Item removido!
+3;15;consumo;consumi 1 kg de arroz;consumir;consumir;True;True;True;False;;;0.69;Baixa registrada! Restam 1.00 de Arroz.
+3;16;consumo;terminei o iogurte;consumir;consumir;True;True;True;False;;;0.75;Você consumiu todo o estoque de Iogurte Natural. Item removido!
+3;17;consumo;usei 3 tomates;consumir;consumir;True;True;True;False;;;0.7;Baixa registrada! Restam 2.00 de Tomate.
+3;18;consumo;usei leite;consumir;consumir;True;True;True;False;;;0.77;Baixa registrada! Restam 3.00 de Leite.
+3;19;adicionar;comprei 2 kg de arroz;adicionar;adicionar;True;True;True;False;;;0.73;Adicionado: 2 kg de Arroz.
+3;20;adicionar;comprei 6 ovos;adicionar;adicionar;True;True;True;False;;;0.7;Adicionado: 6 None de Ovos.
+3;21;adicionar;comprei 1 kg de farinha de trigo;adicionar;adicionar;True;True;True;False;;;0.68;Adicionado: 1 kg de farinha de trigo.
+3;22;adicionar;adicionei 2 pacotes de café;adicionar;adicionar;True;True;True;False;;;1.15;Adicionado: 2 pacotes de café.
+3;23;adicionar;comprei 12 latas de refrigerante;adicionar;adicionar;True;True;True;False;;;0.78;Adicionado: 12 latas de refrigerante.
+3;24;adicionar;comprei uma dúzia de ovos;adicionar;adicionar;True;True;True;False;;;1.33;Adicionado: 12 None de Ovos.
+3;25;composta;comi 2 bananas e comprei 1 kg de feijão;consumir|adicionar;adicionar|consumir;True;True;True;False;;;1.73;Baixa registrada! Restam 4.00 de Banana. / Adicionado: 1 kg de Feijão.
+3;26;composta;usei 1 cebola e 2 tomates;consumir|consumir;consumir|consumir;True;True;True;False;;;1.59;Baixa registrada! Restam 2.00 de Cebola. / Baixa registrada! Restam 3.00 de Tomate.
+3;27;composta;tomei 1 litro de leite, comprei 2 kg de arroz e 1 detergente;consumir|adicionar|adicionar;adicionar|adicionar|consumir;True;True;True;False;;;1.83;Baixa registrada! Restam 3.00 de Leite. / Adicionado: 2 kg de Arroz. / Adicionado: 1 None de Detergente.
+3;28;composta;acabou o chocolate e comprei 2 biscoitos recheados;consumir|adicionar;adicionar|consumir;True;True;True;False;;;0.73;Você consumiu todo o estoque de Chocolate. Item removido! / Adicionado: 2 None de Biscoito Recheado.
+3;29;composta;comprei 3 pacotes de macarrão e usei 1 ovo;adicionar|consumir;adicionar|consumir;True;True;True;False;;;1.12;Adicionado: 3 pacotes de Macarrão. / Baixa registrada! Restam 11.00 de Ovos.
+3;30;composta;vê o que tem de leite e depois usa 1 ovo;consultar|consumir;consultar|consumir;True;True;True;False;;;0.69;[lista com 16 itens]
+3;31;armadilha;usei 1 queijo;consumir;consumir;True;True;True;False;;;1.19;Encontrei mais de um item parecido com queijo. Seja mais específico.
+3;32;armadilha;comi 1 caviar;consumir;consumir;True;True;True;False;;;1.46;Não encontrei caviar na sua despensa.
+3;33;armadilha;comprei 500 g de arroz;adicionar;adicionar;True;True;True;False;;;2.16;Adicionado: 0.5 kg de Arroz.
+3;34;armadilha;usei metade do feijão;consumir;consumir;True;True;True;False;;;1.49;Baixa registrada! Restam 0.50 de Feijão.
+3;35;armadilha;qual é a capital da França?;duvida_geral;duvida_geral;True;True;True;False;;;0.8;A capital da França é Paris.
+3;36;armadilha;me conta uma piada;duvida_geral;duvida_geral;True;True;True;False;;;0.72;Por que o computador foi preso? Porque ele executou um programa ilegal!
+3;37;variacao;tem arros aí?;consultar;consultar;True;True;True;False;;;0.64;[lista com 16 itens]
+3;38;variacao;uzei 2 ovos;consumir;consumir;True;True;True;False;;;0.68;Baixa registrada! Restam 10.00 de Ovos.
+3;39;variacao;cabou o detergente;consumir;consumir;True;True;True;False;;;0.88;Você consumiu todo o estoque de Detergente. Item removido!
