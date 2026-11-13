@@ -1,16 +1,23 @@
 import logging
+from threading import Thread
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
-from config import TELEGRAM_BOT_TOKEN
+from config import TELEGRAM_BOT_TOKEN, SHORTCUT_API_HOST, SHORTCUT_API_PORT
 import handlers.telegram as handlers
 from telegram.ext import CallbackQueryHandler
+import shortcut_api
 
 # Configuração de logs para facilitar o debug
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 def main():
+
+    api = shortcut_api.iniciar(SHORTCUT_API_HOST, SHORTCUT_API_PORT)
+    Thread(target=api.serve_forever, daemon=True).start()
+    logging.info("API do Atalho ouvindo em %s:%s", SHORTCUT_API_HOST, SHORTCUT_API_PORT)
 
     # Inicializa a aplicação do bot
     app = (
@@ -23,6 +30,7 @@ def main():
     # Registra os manipuladores (Handlers)
     app.add_handler(CommandHandler("start", handlers.start_command))
     app.add_handler(CommandHandler("despensa", handlers.listar_despensa))
+    app.add_handler(CommandHandler("atalho", handlers.atalho_command))
     app.job_queue.run_repeating(handlers.verificar_lembretes, interval=3600, first=60)
     
     # Filtra mensagens que contêm fotos
@@ -38,7 +46,11 @@ def main():
     print("Bot rodando! Pressione Ctrl+C para parar.")
     
     # Mantém o bot escutando por novas mensagens
-    app.run_polling()
+    try:
+        app.run_polling()
+    finally:
+        api.shutdown()
+        api.server_close()
 
 if __name__ == '__main__':
     main()

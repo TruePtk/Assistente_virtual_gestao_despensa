@@ -65,9 +65,15 @@ Crie um arquivo chamado `.env` na raiz do projeto, no mesmo nível de `main.py` 
 ```dotenv
 TELEGRAM_BOT_TOKEN=cole_aqui_o_token_do_BotFather
 GEMINI_API_KEY=cole_aqui_a_chave_do_Google_AI_Studio
+IOS_SHORTCUT_INSTALL_URL=https://www.icloud.com/shortcuts/SEU_LINK_COMPARTILHADO
+IOS_SHORTCUT_NAME=Despensa
+SHORTCUT_API_HOST=127.0.0.1
+SHORTCUT_API_PORT=8765
 ```
 
-Substitua os textos de exemplo pelos valores reais, sem aspas. O programa carrega essas variáveis em `config.py` e interrompe a inicialização se alguma estiver ausente. Inicie o bot a partir da pasta do projeto para que o `.env` seja encontrado.
+Substitua os valores pelos seus, sem aspas. `TELEGRAM_BOT_TOKEN` e `GEMINI_API_KEY` são obrigatórios; as configurações do atalho são opcionais até publicar o atalho e a API. Inicie o bot a partir da pasta do projeto para que o `.env` seja encontrado.
+
+`IOS_SHORTCUT_INSTALL_URL` é o link de compartilhamento do Atalho publicado no iCloud. `IOS_SHORTCUT_NAME` deve ser exatamente o nome instalado. O nome padrão é `Despensa`, para facilitar a execução pela Siri (“E aí Siri, Despensa”). A Apple inicia um atalho ao ouvir o nome dele ([Suporte da Apple](https://support.apple.com/pt-br/guide/shortcuts/apd07c25bb38/9.0/ios/26)). `SHORTCUT_API_HOST` e `SHORTCUT_API_PORT` definem onde o processo local escuta; a API fica em `127.0.0.1:8765` por padrão. Para estudo sem domínio, use `deploy/quick-tunnel.ps1`: ele inicia um Cloudflare Quick Tunnel HTTPS, injeta a URL temporária no bot e mantém ambos ativos até `Ctrl+C`. O script usa `.tools/cloudflared.exe` se existir ou `cloudflared` instalado no sistema; consulte o [guia oficial](https://developers.cloudflare.com/tunnel/downloads/) para obter o executável. Não exponha a porta HTTP diretamente à internet.
 
 O `.gitignore` já exclui `.env` e `.venv`. Mantenha as chaves apenas nesse arquivo local: não as escreva no código, README, commits, capturas de tela ou mensagens públicas. Antes de enviar alterações, confira com `git status` se `.env` não aparece entre os arquivos a serem adicionados. Se uma chave for exposta, revogue-a no serviço correspondente e gere outra.
 
@@ -81,12 +87,21 @@ python main.py
 
 O bot usa polling para receber mensagens. Deixe o processo aberto enquanto quiser que ele responda; `Ctrl+C` encerra a execução.
 
+Para aceitar solicitações de iPhones fora da rede local sem comprar domínio, instale `cloudflared` e execute no PowerShell:
+
+```powershell
+.\deploy\quick-tunnel.ps1
+```
+
+O script abre o túnel HTTPS temporário e inicia o bot com a URL pública atual. Copie a URL exibida para verificar `https://<url>/health`, depois solicite novamente `/atalho` no Telegram para vincular o aparelho a essa URL. A máquina precisa permanecer ligada, com o script em execução. Se houver um `config.yaml` em `%USERPROFILE%\.cloudflared`, renomeie-o durante o uso do Quick Tunnel, pois o Cloudflare informa que esse modo não funciona com esse arquivo presente.
+
 ## Mensagens e respostas
 
 | Entrada | Comportamento |
 | --- | --- |
 | `/start` | Apresenta o assistente e explica como enviar uma nota ou perguntar sobre receitas. |
 | `/despensa` | Lista os itens do usuário com botões para iniciar o registro de consumo. |
+| `/atalho` | Envia o link de instalação do Atalho e um botão que gera o link de autenticação com o ID do Telegram do usuário. |
 | `Adicione 3 latas de milho.` | A IA interpreta a intenção e o núcleo soma a quantidade a um item correspondente ou cria um novo. |
 | `Usei 1 lata de milho.` | A IA identifica o item e a quantidade; o banco subtrai o valor. Se o estoque chegar a zero, o item é removido. |
 | `O que tem na minha despensa?` | A interpretação retorna `consultar`; o bot mostra a mesma lista de `/despensa`. |
@@ -109,6 +124,12 @@ Ao enviar uma foto, o bot confirma que recebeu a imagem. Se a leitura funcionar,
 ```
 
 O trabalho avaliou a consulta pública da NFC-e pelo QR Code, mas registrou bloqueio ao acesso automatizado pela SEFAZ. Por isso, a monografia descreve a leitura por foto como o fluxo mantido para entrada de dados e não considera a consulta ao QR Code uma funcionalidade suportada.
+
+O fluxo `/atalho` depende de um Atalho publicado no iCloud e configurado para receber texto de entrada. O botão HTTPS “Autenticar neste iPhone” chama `GET /api/shortcut/open`, que redireciona para o esquema URL da [Apple](https://support.apple.com/pt-br/guide/shortcuts/apd624386f42/9.0/ios/26) e executa o Atalho com um JSON contendo a URL pública temporária, o ID e um código de uso único. O Atalho troca esse código por um token de acesso no `POST /api/shortcut/link`; o código expira em 15 minutos e só pode ser usado uma vez. O uso de HTTPS no botão atende à exigência do Telegram de aceitar somente links HTTP ou `tg://` ([Bot API do Telegram](https://core.telegram.org/bots/api)).
+
+Com o token no cabeçalho `Authorization: Bearer <token>`, o Atalho pode consultar `GET /api/shortcut/pantry` ou enviar uma mensagem em `POST /api/shortcut/message` com `{"message":"Adicione 2 litros de leite"}`. A resposta traz `reply` e, quando a ação é uma consulta, `items`. Para revogar o token do dispositivo, use `DELETE /api/shortcut/token`. A API também oferece `GET /health` para verificar disponibilidade. O token concede acesso de leitura e alteração à despensa; o Atalho precisa persistir esse token entre execuções. Se for salvo como arquivo em texto simples, qualquer pessoa com acesso aos arquivos do iCloud Drive pode usá-lo; revogue-o se o dispositivo ou arquivo for perdido.
+
+O Quick Tunnel é gratuito e dispensa domínio e conta Cloudflare, mas é temporário: a URL muda a cada execução e deixa de responder quando o processo é encerrado. Rode `deploy/quick-tunnel.ps1` em vez de iniciar `main.py` diretamente; a URL atual será incorporada aos novos links enviados por `/atalho`. Quando reiniciar o bot/túnel, vincule o atalho de novo para atualizar a URL salva nele. Esse modo é para demonstrações, não para uso contínuo ([limitações oficiais](https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/)).
 
 **Diferença entre a monografia e o código atual:** `handlers/telegram.py` e `nfc_e_service.py` ainda contêm um caminho experimental que tenta consultar o QR Code antes de recorrer à leitura visual. Se a consulta for bloqueada, o código atual retorna erro em vez de tentar automaticamente a leitura da mesma imagem por foto. Portanto, o comportamento implementado ainda não está totalmente alinhado à decisão descrita na monografia; para cadastrar uma nota, use uma imagem sem QR Code NFC-e reconhecível ou ajuste o fluxo antes de uma demonstração.
 
@@ -164,20 +185,21 @@ Na primeira rodada, as falhas principais envolveram expressões como “acabou�
 
 ```text
 Telegram ──> main.py / handlers/telegram.py
-                    │
-                    ├─ Texto ──> ai_config/ai_service.py ── JSON de operações
-                    │                                       │
-                    ├─ Foto ──> Gemini Vision ──────────────┤
-                    └───────────────────────────────────────┘
-                                      ↓
-                               handlers/core.py
-                                      ↓
-                         database/database.py ── SQLite
+Atalho iOS ── HTTPS ──> shortcut_api.py
+        │                        │
+        └───────────────┬────────┘
+                        ↓
+                 handlers/core.py
+                        ↓
+       ai_config/ai_service.py ── Gemini
+                        ↓
+             database/database.py ── SQLite
 ```
 
 - `main.py`: configura o bot, registra comandos e handlers, e agenda os lembretes.
 - `config.py`: carrega e valida as variáveis de ambiente.
 - `handlers/telegram.py`: integra mensagens, fotos e botões do Telegram com os casos de uso.
+- `shortcut_api.py`: API HTTP para vincular Atalhos iOS, consultar a despensa e enviar mensagens.
 - `handlers/core.py`: interpreta os resultados da IA, aplica regras de estoque e coordena lembretes e notas.
 - `ai_config/ai_service.py`: chama o Gemini para interpretar mensagens e extrair itens de notas.
 - `nfc_e_service.py`: contém a tentativa experimental de decodificar QR Code e consultar páginas públicas de NFC-e.
@@ -189,7 +211,7 @@ O fluxo principal descrito na monografia é Telegram → interpretação ou extr
 ## Limitações e escopo
 
 - O banco é local ao processo e depende do diretório de execução. Faça cópias de segurança de `despensa.db` se os dados forem importantes; esse arquivo é ignorado pelo Git.
-- O bot, o banco e os lembretes são adequados ao protótipo e à baixa concorrência esperada; não há hospedagem ou disponibilidade contínua.
+- O bot, a API, o banco e os lembretes são adequados ao protótipo e à baixa concorrência esperada; não há hospedagem ou disponibilidade contínua. O acesso externo requer um proxy HTTPS configurado pelo operador.
 - Mensagens e fotos são processadas por serviços externos do Telegram e/ou Gemini. Uma foto enviada para leitura visual é transmitida ao Gemini.
-- O WhatsApp foi substituído pelo Telegram devido à dificuldade de acesso à API. Um dashboard web, o comparativo entre interfaces e o atalho do iOS dependem de trabalho futuro.
+- O WhatsApp foi substituído pelo Telegram devido à dificuldade de acesso à API. Um dashboard web, o comparativo entre interfaces e a integração completa do atalho do iOS dependem de trabalho futuro; `/atalho` já entrega a instalação e inicia a vinculação do ID.
 - A leitura depende da qualidade da foto e da disponibilidade do serviço Gemini. Confira o estoque quando a interpretação for importante.

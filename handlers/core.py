@@ -2,6 +2,8 @@
 
 import math
 import re
+import hashlib
+import secrets
 import unicodedata
 from datetime import datetime, timezone
 from difflib import SequenceMatcher
@@ -61,6 +63,14 @@ def adiar_lembrete(item_id: int, user_id: int) -> bool:
 
 def obter_usuarios():
     return database.obter_usuarios()
+
+
+def gerar_codigo_vinculacao_atalho(user_id: int) -> str:
+    """Cria um código aleatório de vinculação que expira em 15 minutos."""
+    codigo = secrets.token_urlsafe(32)
+    hash_codigo = hashlib.sha256(codigo.encode("utf-8")).hexdigest()
+    database.criar_vinculacao_atalho(hash_codigo, user_id)
+    return codigo
 
 
 def _normalizar_nome(nome: str) -> str:

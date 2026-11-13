@@ -1,12 +1,15 @@
 """Adaptador dos comandos para o Telegram."""
 
 import asyncio
+import json
 from collections import defaultdict
+from urllib.parse import urlencode
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import ContextTypes
 
 from handlers import core
+from config import IOS_SHORTCUT_INSTALL_URL, SHORTCUT_API_BASE_URL
 
 _locks_por_usuario = defaultdict(asyncio.Lock)
 
@@ -22,6 +25,42 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "ou me pergunte o que podemos cozinhar com o que tem guardado."
     )
     await update.message.reply_text(mensagem)
+
+
+async def atalho_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Envia o link de instalação e um link para vincular o ID do Telegram."""
+    if update.effective_chat.type != "private":
+        await update.effective_message.reply_text("Use este comando em uma conversa privada com o bot.")
+        return
+    if not IOS_SHORTCUT_INSTALL_URL or not SHORTCUT_API_BASE_URL:
+        await update.message.reply_text(
+            "A instalação ou a API do Atalho para iPhone ainda não foi configurada."
+        )
+        return
+
+    user_id = update.effective_user.id
+    botoes = [
+        [InlineKeyboardButton("Instalar Atalho", url=IOS_SHORTCUT_INSTALL_URL)],
+        [InlineKeyboardButton("Autenticar neste iPhone", url=_url_autenticacao_atalho(user_id))],
+    ]
+    await update.effective_message.reply_text(
+        "Para configurar o Atalho no iPhone:\n"
+        "1. Instale pelo botão abaixo.\n"
+        "2. Toque em *Autenticar neste iPhone* e abra o link enviado. O Atalho usará o "
+        "código temporário para vincular sua conta e salvar o token de acesso para as próximas solicitações.",
+        reply_markup=InlineKeyboardMarkup(botoes),
+        parse_mode="Markdown",
+    )
+
+
+def _url_autenticacao_atalho(user_id: int) -> str:
+    codigo = core.gerar_codigo_vinculacao_atalho(user_id)
+    entrada = json.dumps({
+        "api_url": SHORTCUT_API_BASE_URL,
+        "telegram_id": user_id,
+        "pairing_code": codigo,
+    }, separators=(",", ":"), ensure_ascii=False)
+    return f"{SHORTCUT_API_BASE_URL}/api/shortcut/open?{urlencode({'text': entrada})}"
 
 
 async def listar_despensa(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -96,7 +135,17 @@ async def _lidar_com_botoes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = query.from_user.id
     print(f"Botão pressionado por {user_id}: {dados}")
 
-    if dados.startswith("remover_"):
+    if dados == "atalho_autenticar":
+        await query.message.reply_text(
+            "Toque no botão abaixo para abrir o Atalho e vincular sua conta.",
+            reply_markup=InlineKeyboardMarkup([[
+                InlineKeyboardButton(
+                    "Abrir Atalho e autenticar",
+                    url=_url_autenticacao_atalho(user_id),
+                )
+            ]]),
+        )
+    elif dados.startswith("remover_"):
         item_id = dados.split("_", 1)[1]
         item = core.selecionar_item(user_id, item_id)
         if not item:

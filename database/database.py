@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import math
+from datetime import datetime, timedelta, timezone
 
 # O banco de dados será salvo neste arquivo local
 DB_FILE = "despensa.db"
@@ -45,6 +46,21 @@ def inicializar_banco():
             )
         ''')
 
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS shortcut_pairings (
+                codigo_hash TEXT PRIMARY KEY,
+                telegram_id INTEGER NOT NULL,
+                expira_em TIMESTAMP NOT NULL
+            )
+        ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS shortcut_tokens (
+                token_hash TEXT PRIMARY KEY,
+                telegram_id INTEGER NOT NULL,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
         colunas = {linha[1] for linha in cursor.execute("PRAGMA table_info(itens_despensa)")}
         for coluna in ("ultimo_consumo", "ultimo_lembrete", "lembrar_depois"):
             if coluna not in colunas:
@@ -67,6 +83,57 @@ def cadastrar_usuario(telegram_id: int, nome: str):
             VALUES (?, ?)
         ''', (telegram_id, nome))
         conn.commit()
+
+def criar_vinculacao_atalho(codigo_hash: str, telegram_id: int, validade_minutos: int = 15):
+    """Armazena um código de vinculação de uso único e curta duração."""
+    expira_em = (datetime.now(timezone.utc).replace(tzinfo=None)
+                 + timedelta(minutes=validade_minutos)).strftime("%Y-%m-%d %H:%M:%S")
+    with sqlite3.connect(DB_FILE) as conn:
+        conn.execute("DELETE FROM shortcut_pairings WHERE telegram_id = ?", (telegram_id,))
+        conn.execute(
+            "INSERT INTO shortcut_pairings (codigo_hash, telegram_id, expira_em) VALUES (?, ?, ?)",
+            (codigo_hash, telegram_id, expira_em),
+        )
+        conn.commit()
+
+def trocar_codigo_atalho_por_token(codigo_hash: str, telegram_id: int, token_hash: str) -> bool:
+    """Consome o código uma única vez e cria um token persistente para o atalho."""
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("BEGIN IMMEDIATE")
+        cursor.execute(
+            "SELECT 1 FROM shortcut_pairings WHERE codigo_hash = ? AND telegram_id = ? "
+            "AND expira_em > CURRENT_TIMESTAMP",
+            (codigo_hash, telegram_id),
+        )
+        if not cursor.fetchone():
+            conn.rollback()
+            return False
+        cursor.execute("DELETE FROM shortcut_pairings WHERE codigo_hash = ?", (codigo_hash,))
+        cursor.execute(
+            "INSERT INTO shortcut_tokens (token_hash, telegram_id) VALUES (?, ?)",
+            (token_hash, telegram_id),
+        )
+        cursor.execute(
+            "INSERT OR IGNORE INTO usuarios (telegram_id, nome) VALUES (?, NULL)",
+            (telegram_id,),
+        )
+        conn.commit()
+        return True
+
+def usuario_por_token_atalho(token_hash: str):
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.execute(
+            "SELECT telegram_id FROM shortcut_tokens WHERE token_hash = ?", (token_hash,)
+        )
+        resultado = cursor.fetchone()
+        return resultado[0] if resultado else None
+
+def revogar_token_atalho(token_hash: str) -> bool:
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.execute("DELETE FROM shortcut_tokens WHERE token_hash = ?", (token_hash,))
+        conn.commit()
+        return cursor.rowcount > 0
 
 def salvar_item_despensa(telegram_id: int, nome_produto: str, quantidade: float, unidade_medida: str, nome_categoria: str):
     """Salva o item extraído pela IA na despensa."""
