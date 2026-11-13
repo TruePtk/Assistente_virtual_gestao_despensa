@@ -34,7 +34,7 @@ def processar_nota_fiscal(foto_bytes: bytearray) -> dict:
     
     Categorize os itens de forma lógica para uma despensa (ex: Laticínios, Limpeza, Hortifruti, Mercearia).
     Traduza abreviações comuns de mercado para o nome real do produto.
-    Padronize as unidades: use kg em vez de g e litro em vez de ml, convertendo o valor (ex.: 500 g = 0.5 kg).
+    Padronize as unidades: use kg em vez de g e L em vez de mL, convertendo o valor (ex.: 500 g = 0.5 kg).
     
     Formato esperado:
     {
@@ -97,10 +97,10 @@ def interpretar_intencao_usuario(texto_usuario: str) -> dict:
 
         Para "consumir", use "quantidade" como número ou "TUDO".
         Se o usuário disser que um item acabou ou terminou (ex.: "acabou o leite", "terminei o iogurte"), use "quantidade": "TUDO" para esse item.
-        Use sempre kg em vez de g e litro em vez de ml, convertendo o valor (ex.: 500 g = 0.5 kg, 250 ml = 0.25 litro).
+        Use sempre kg em vez de g e L em vez de mL, convertendo o valor (ex.: 500 g = 0.5 kg, 250 mL = 0.25 L).
         Quando o usuário quiser consumir tudo da despensa, retorne uma única operação
         com "acao": "consumir", "item_alvo": "tudo" e "quantidade": "TUDO".
-        Para "adicionar", informe quantidade, unidade_medida e categoria.
+        Para "adicionar", informe quantidade e categoria. Em unidade_medida, use somente a unidade que o usuário disser explicitamente; se não disser uma unidade, retorne null. Não invente "unidade" quando a mensagem não especificar uma medida.
         Para "consultar", não inclua item_alvo.
         Para "duvida_geral", inclua uma operação com "acao": "duvida_geral" e uma chave "resposta" com a resposta do bot.
         Não misture uma dúvida geral com operações de despensa.

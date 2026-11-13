@@ -10,6 +10,9 @@ from telegram.ext import ContextTypes
 
 from handlers import core
 from config import IOS_SHORTCUT_INSTALL_URL, SHORTCUT_API_BASE_URL
+from site_web import tokens
+
+URL_SITE = "http://localhost:8000"
 
 _locks_por_usuario = defaultdict(asyncio.Lock)
 
@@ -61,6 +64,14 @@ def _url_autenticacao_atalho(user_id: int) -> str:
         "pairing_code": codigo,
     }, separators=(",", ":"), ensure_ascii=False)
     return f"{SHORTCUT_API_BASE_URL}/api/shortcut/open?{urlencode({'text': entrada})}"
+
+
+async def site_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Gera um link pessoal para consultar e editar a despensa no site."""
+    token = tokens.criar_token(update.effective_user.id)
+    await update.effective_message.reply_text(
+        f"Seu link pessoal (não compartilhe):\n{URL_SITE}/#t={token}"
+    )
 
 
 async def listar_despensa(update: Update, context: ContextTypes.DEFAULT_TYPE):

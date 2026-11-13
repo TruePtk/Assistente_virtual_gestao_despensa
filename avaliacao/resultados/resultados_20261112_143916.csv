@@ -1,0 +1,31 @@
+﻿execucao;id;categoria;mensagem;acoes_esperadas;acoes_obtidas;intencao_ok;estado_ok;acerto;item_inventado;divergencias;tipo_erro;tempo_s;resposta_bot
+1;1;consulta;tenho arroz?;consultar;consultar;True;True;True;False;;;16.26;[lista com 16 itens]
+1;2;consulta;ainda tem leite em casa?;consultar;consultar;True;True;True;False;;;1.71;[lista com 16 itens]
+1;3;consulta;o que tem na despensa?;consultar;consultar;True;True;True;False;;;20.7;[lista com 16 itens]
+1;4;consulta;me mostra minha despensa;consultar;consultar;True;True;True;False;;;4.51;[lista com 16 itens]
+1;5;consulta;tem ovo?;consultar;consultar;True;True;True;False;;;3.0;[lista com 16 itens]
+1;6;consulta;quantos leites eu tenho?;consultar;consultar;True;True;True;False;;;2.7;[lista com 16 itens]
+1;7;ausencia;tenho caviar?;consultar;consultar;True;True;True;False;;;4.3;[lista com 16 itens]
+1;8;ausencia;ainda tenho salmão?;consultar;consultar;True;True;True;False;;;2.02;[lista com 16 itens]
+1;9;ausencia;tem sorvete em casa?;consultar;consultar;True;True;True;False;;;0.87;[lista com 16 itens]
+1;10;ausencia;o que já acabou?;consultar;consultar;True;True;True;False;;;9.79;[lista com 16 itens]
+1;11;consumo;usei 2 ovos;consumir;consumir;True;True;True;False;;;1.13;Baixa registrada! Restam 10.00 de Ovos.
+1;12;consumo;acabei de tomar 1 litro de leite;consumir;consumir;True;True;True;False;;;1.22;Baixa registrada! Restam 3.00 de Leite.
+1;13;consumo;comi 1 banana;consumir;consumir;True;True;True;False;;;1.13;Baixa registrada! Restam 5.00 de Banana.
+1;14;consumo;gastei todo o detergente;consumir;consumir;True;True;True;False;;;26.69;Você consumiu todo o estoque de Detergente. Item removido!
+1;15;consumo;consumi 1 kg de arroz;consumir;consumir;True;True;True;False;;;8.35;Baixa registrada! Restam 1.00 de Arroz.
+1;16;consumo;terminei o iogurte;consumir;consumir;True;True;True;False;;;2.52;Você consumiu todo o estoque de Iogurte Natural. Item removido!
+1;17;consumo;usei 3 tomates;consumir;consumir;True;True;True;False;;;2.21;Baixa registrada! Restam 2.00 de Tomate.
+1;18;consumo;usei leite;consumir;consumir;True;True;True;False;;;1.87;Baixa registrada! Restam 3.00 de Leite.
+1;19;adicionar;comprei 2 kg de arroz;adicionar;adicionar;True;True;True;False;;;0.94;Adicionado: 2 kg de Arroz.
+1;20;adicionar;comprei 6 ovos;adicionar;adicionar;True;True;True;False;;;0.83;Adicionado: 6 unidades de Ovos.
+1;21;adicionar;comprei 1 kg de farinha de trigo;adicionar;adicionar;True;True;True;False;;;2.51;Adicionado: 1 kg de farinha de trigo.
+1;22;adicionar;adicionei 2 pacotes de café;adicionar;adicionar;True;True;True;False;;;1.66;Adicionado: 2 pacotes de café.
+1;23;adicionar;comprei 12 latas de refrigerante;adicionar;adicionar;True;True;True;False;;;8.24;Adicionado: 12 latas de refrigerante.
+1;24;adicionar;comprei uma dúzia de ovos;adicionar;adicionar;True;True;True;False;;;1.73;Adicionado: 12 unidades de Ovos.
+1;25;composta;comi 2 bananas e comprei 1 kg de feijão;consumir|adicionar;adicionar|consumir;True;True;True;False;;;2.4;Baixa registrada! Restam 4.00 de Banana. / Adicionado: 1 kg de Feijão.
+1;26;composta;usei 1 cebola e 2 tomates;consumir|consumir;consumir|consumir;True;True;True;False;;;6.07;Baixa registrada! Restam 2.00 de Cebola. / Baixa registrada! Restam 3.00 de Tomate.
+1;27;composta;tomei 1 litro de leite, comprei 2 kg de arroz e 1 detergente;consumir|adicionar|adicionar;adicionar|adicionar|consumir;True;True;True;False;;;1.76;Baixa registrada! Restam 3.00 de Leite. / Adicionado: 2 kg de Arroz. / Adicionado: 1 unidade de Detergente.
+1;28;composta;acabou o chocolate e comprei 2 biscoitos recheados;consumir|adicionar;adicionar|consumir;True;False;False;False;biscoito recheado: esperado 4, obtido 2;estado;2.01;"Você consumiu todo o estoque de Chocolate. Item removido! / Já existe Biscoito Recheado cadastrado em pacote; não somei a quantidade em unidade."
+1;29;composta;comprei 3 pacotes de macarrão e usei 1 ovo;adicionar|consumir;adicionar|consumir;True;False;False;False;macarrao: esperado 6, obtido 3;estado;0.81;"Já existe Macarrão cadastrado em pacote; não somei a quantidade em pacotes. / Baixa registrada! Restam 11.00 de Ovos."
+1;30;composta;vê o que tem de leite e depois usa 1 ovo;consultar|consumir;consultar|consumir|consumir;False;False;False;False;leite: esperado 4, obtido 3;intencao;2.22;[lista com 16 itens]

@@ -31,6 +31,7 @@ def main():
     app.add_handler(CommandHandler("start", handlers.start_command))
     app.add_handler(CommandHandler("despensa", handlers.listar_despensa))
     app.add_handler(CommandHandler("atalho", handlers.atalho_command))
+    app.add_handler(CommandHandler("site", handlers.site_command))
     app.job_queue.run_repeating(handlers.verificar_lembretes, interval=3600, first=60)
     
     # Filtra mensagens que contêm fotos
