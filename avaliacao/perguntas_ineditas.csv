@@ -1,0 +1,22 @@
+id;categoria;mensagem;acoes_esperadas;estado_esperado
+N01;consulta;Liste os produtos que ainda estão guardados.;consultar;{}
+N02;consulta;Preciso conferir o que ainda há na despensa.;consultar;{}
+N03;consulta;Quais itens continuam disponíveis para uso?;consultar;{}
+N04;ausencia;Tem café em grãos no estoque?;consultar;{}
+N05;ausencia;Ainda existe azeite de oliva por aqui?;consultar;{}
+N06;consumo;Dá baixa em 3 ovos.;consumir;"{""Ovos"": 9}"
+N07;consumo;Retire meio quilo de arroz da despensa.;consumir;"{""Arroz"": 1.5}"
+N08;consumo;Registre o consumo de 2 unidades de chocolate.;consumir;"{""Chocolate"": 1}"
+N09;consumo;Anote que usei 1 pacote de macarrão.;consumir;"{""Macarrão"": 2}"
+N10;adicionar;A despensa recebeu mais 1 kg de arroz.;adicionar;"{""Arroz"": 3}"
+N11;adicionar;Registre a chegada de 4 ovos.;adicionar;"{""Ovos"": 16}"
+N12;adicionar;Cadastre 2 sabonetes.;adicionar;"{""Sabonete"": 2}"
+N13;adicionar;Inclua 3 maçãs.;adicionar;"{""Maçã"": 3}"
+N14;composta;Consumi 2 ovos e cadastre 1 kg de farinha de mandioca.;adicionar|consumir;"{""Ovos"": 10, ""Farinha de mandioca"": 1}"
+N15;composta;Confira a despensa e adicione 2 pastas de dente.;adicionar|consultar;"{""Pasta de dente"": 2}"
+N16;composta;Dê baixa em 1 banana e registre a entrada de 1 bandeja de morango.;adicionar|consumir;"{""Banana"": 5, ""Morango"": 1}"
+N17;armadilha;Adicione 1 kg de queijo.;adicionar;{}
+N18;armadilha;Baixe 1 queijo.;consumir;{}
+N19;armadilha;Me explique como calcular 15% de 80.;duvida_geral;{}
+N20;variacao;Tem cebola na dispensa?;consultar;{}
+N21;variacao;Gastei um ovinho.;consumir;"{""Ovos"": 11}"
