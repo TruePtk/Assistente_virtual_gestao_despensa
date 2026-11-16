@@ -3,16 +3,20 @@
 import hashlib
 import json
 import logging
+import math
 import secrets
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urlparse
 
-from config import IOS_SHORTCUT_NAME, SHORTCUT_API_BASE_URL
+from config import IOS_SHORTCUT_NAME, SHORTCUT_API_BASE_URL, SHORTCUT_API_PORT
 import database.database as database
 from handlers import core
+from site_web import tokens as site_tokens
 
 logger = logging.getLogger(__name__)
 MAX_BODY_BYTES = 16_384
+SITE_HTML = Path(__file__).parent / "site_web" / "index.html"
 
 
 def _hash(valor: str) -> str:
@@ -33,6 +37,15 @@ class ShortcutRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
         self.wfile.write(corpo)
+
+    def _usuario_site(self):
+        token = self.headers.get("X-Token", "")
+        if not token or len(token) > 256:
+            return None
+        return site_tokens.usuario_do_token(token)
+
+    def _erro_site_nao_autorizado(self):
+        self._json(401, {"detail": "Link inválido. Peça um novo com /site no bot."})
 
     def _body(self):
         try:
@@ -59,6 +72,30 @@ class ShortcutRequestHandler(BaseHTTPRequestHandler):
         caminho = requisicao.path
         if caminho == "/health":
             self._json(200, {"status": "ok"})
+            return
+        if caminho == "/":
+            try:
+                corpo = SITE_HTML.read_bytes()
+            except OSError:
+                logger.exception("Não foi possível carregar a página do site")
+                self._json(500, {"detail": "Não foi possível carregar o site."})
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(corpo)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(corpo)
+            return
+        if caminho == "/api/despensa":
+            telegram_id = self._usuario_site()
+            if telegram_id is None:
+                self._erro_site_nao_autorizado()
+                return
+            self._json(200, [
+                {"id": item_id, "nome": nome, "quantidade": quantidade, "unidade": unidade}
+                for item_id, nome, quantidade, unidade in core.obter_itens_despensa(telegram_id)
+            ])
             return
         if caminho == "/api/shortcut/open":
             entrada_texto = parse_qs(requisicao.query).get("text", [""])[0]
@@ -104,6 +141,73 @@ class ShortcutRequestHandler(BaseHTTPRequestHandler):
         dados = self._body()
         if dados is None:
             self._json(400, {"error": "invalid_json"})
+            return
+
+        if caminho in ("/api/adicionar", "/api/consumir"):
+            telegram_id = self._usuario_site()
+            if telegram_id is None:
+                self._erro_site_nao_autorizado()
+                return
+
+            if caminho == "/api/consumir":
+                item_id = dados.get("item_id")
+                quantidade = dados.get("quantidade")
+                if (isinstance(item_id, bool) or not isinstance(item_id, int) or item_id <= 0
+                        or not isinstance(quantidade, str) or not 0 < len(quantidade) <= 20):
+                    self._json(422, {"detail": "Dados de consumo inválidos."})
+                    return
+                quantidade = quantidade.strip()
+                if quantidade.upper() != "TUDO":
+                    try:
+                        valor = float(quantidade)
+                    except ValueError:
+                        self._json(422, {"detail": "Quantidade inválida."})
+                        return
+                    if not math.isfinite(valor) or valor <= 0:
+                        self._json(422, {"detail": "A quantidade deve ser maior que zero."})
+                        return
+                    quantidade = str(valor)
+                self._json(200, {"mensagem": core.consumir_item(item_id, telegram_id, quantidade)})
+                return
+
+            nome = dados.get("nome")
+            quantidade = dados.get("quantidade")
+            unidade = dados.get("unidade", "unidade")
+            categoria = dados.get("categoria", "Outros")
+            if isinstance(quantidade, bool):
+                quantidade = None
+            try:
+                quantidade = float(quantidade)
+            except (TypeError, ValueError, OverflowError):
+                quantidade = float("nan")
+            if (not isinstance(nome, str) or not isinstance(unidade, str)
+                    or not isinstance(categoria, str) or not nome.strip()
+                    or len(nome) > 100 or not 0 < len(unidade.strip()) <= 20
+                    or unidade not in ("unidade", "kg", "L")
+                    or not 0 < len(categoria.strip()) <= 40
+                    or not math.isfinite(quantidade) or quantidade <= 0):
+                self._json(422, {"detail": "Preencha os dados do item corretamente."})
+                return
+            nome_adicionado, erro = core._adicionar_item(telegram_id, {
+                "item_alvo": nome.strip(),
+                "quantidade": quantidade,
+                "unidade_medida": unidade,
+                "categoria": categoria.strip(),
+            })
+            if erro:
+                self._json(400, {"detail": erro})
+                return
+            self._json(200, {"mensagem": f"Adicionado: {nome_adicionado}"})
+            return
+
+        if caminho == "/api/shortcut/site":
+            telegram_id = self._telegram_id()
+            if telegram_id is None:
+                self._json(401, {"error": "unauthorized"})
+                return
+            token = site_tokens.criar_token(telegram_id)
+            base_url = SHORTCUT_API_BASE_URL or f"http://localhost:{SHORTCUT_API_PORT}"
+            self._json(200, {"site_url": f"{base_url}/#t={token}"})
             return
 
         if caminho == "/api/shortcut/link":

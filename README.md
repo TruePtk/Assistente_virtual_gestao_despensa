@@ -33,7 +33,7 @@ Os nomes e quantidades dos exemplos pressupõem que as operações foram interpr
 - Python 3.12 ou superior.
 - Um bot do Telegram e o token fornecido pelo [@BotFather](https://t.me/BotFather).
 - Uma chave de API do Gemini, criada no [Google AI Studio](https://aistudio.google.com/app/apikey).
-- `cloudflared` é opcional; é necessário apenas para expor a API do Atalho do iOS por um Cloudflare Quick Tunnel em uma demonstração remota.
+- `cloudflared` é opcional; use-o para abrir o site e a API do Atalho do iOS fora da rede local por um Cloudflare Quick Tunnel.
 
 O projeto usa SQLite; não é necessário instalar um servidor de banco de dados. Na primeira execução, `database/database.py` cria `despensa.db` no diretório de onde o programa foi iniciado. O bot e os lembretes só ficam disponíveis enquanto o computador que executa o programa estiver ligado e conectado à internet.
 
@@ -93,15 +93,9 @@ O bot usa polling para receber mensagens. Deixe o processo aberto enquanto quise
 
 ### Site da despensa
 
-O site é um processo separado do bot. Com o bot ativo, abra outro terminal na raiz do projeto, ative o ambiente virtual e inicie:
+O processo `main.py` serve a página HTML e suas rotas pela mesma porta da API do Atalho (`127.0.0.1:8765`). Não é necessário iniciar outro servidor para usar o site. Com o bot ativo, envie `/site` e abra o link pessoal recebido. O site permite consultar o estoque, adicionar produtos e registrar consumo; as alterações aparecem no mesmo banco usado pelo bot. Cada novo `/site` cria um link e invalida o anterior. O link é uma credencial de acesso: não o compartilhe.
 
-```bash
-python -m uvicorn site_web.app:app --host 127.0.0.1 --port 8000
-```
-
-Envie `/site` ao bot e abra o link pessoal recebido. O site permite consultar o estoque, adicionar produtos e registrar consumo; as alterações aparecem no mesmo banco usado pelo bot. Cada novo `/site` cria um link e invalida o anterior. O link é uma credencial de acesso: não o compartilhe.
-
-Para abrir o site em outro aparelho na mesma rede Wi-Fi, use `--host 0.0.0.0` e altere `URL_SITE` em `handlers/telegram.py` para o endereço local do computador, por exemplo `http://192.168.1.20:8000`. Essa configuração é para uma rede confiável; não exponha o site fora da rede sem um proxy HTTPS adequado.
+Para abrir o site no próprio computador sem túnel, o link usa `http://localhost:8765`. Para usar no iPhone ou em outro aparelho fora da rede, inicie o Quick Tunnel descrito abaixo e só então peça um novo link com `/site`; o bot usará a URL HTTPS temporária do túnel.
 
 Para aceitar solicitações de iPhones fora da rede local sem comprar domínio, instale `cloudflared` e execute no PowerShell:
 
@@ -109,7 +103,7 @@ Para aceitar solicitações de iPhones fora da rede local sem comprar domínio, 
 .\deploy\quick-tunnel.ps1
 ```
 
-O script abre o túnel HTTPS temporário para a API do Atalho e inicia o bot, que hospeda essa API localmente em `127.0.0.1:8765`. Copie a URL exibida para verificar `https://<url>/health`, envie `/atalho` no Telegram e siga os botões de instalação e vinculação. A máquina precisa permanecer ligada, com o script em execução. Se houver um `config.yaml` em `%USERPROFILE%\.cloudflared`, renomeie-o durante o uso do Quick Tunnel, pois o Cloudflare informa que esse modo não funciona com esse arquivo presente. O túnel não publica o site em `localhost:8000`.
+O script abre um túnel HTTPS temporário para o servidor local em `127.0.0.1:8765` e inicia o bot. O mesmo endereço público serve a página do site e a API do Atalho. Copie a URL exibida e verifique `https://<url>/health`; depois, envie `/site` para receber um link pessoal do site ou `/atalho` para instalar e vincular o Atalho. A máquina precisa permanecer ligada, com o script em execução. Se houver um `config.yaml` em `%USERPROFILE%\.cloudflared`, renomeie-o durante o uso do Quick Tunnel, pois o Cloudflare informa que esse modo não funciona com esse arquivo presente.
 
 ## Mensagens e respostas
 
@@ -117,7 +111,7 @@ O script abre o túnel HTTPS temporário para a API do Atalho e inicia o bot, qu
 | --- | --- |
 | `/start` | Apresenta o assistente e explica como enviar uma nota ou perguntar sobre receitas. |
 | `/despensa` | Lista os itens do usuário com botões para iniciar o registro de consumo. |
-| `/site` | Cria e envia um link pessoal para abrir o site da despensa. Requer que o servidor Uvicorn esteja em execução. |
+| `/site` | Cria e envia um link pessoal para abrir o site da despensa. Com o Quick Tunnel ativo, o link usa o endereço HTTPS temporário. |
 | `/atalho` | Em conversa privada, envia os botões de instalação do Atalho iOS e de autenticação da conta. Requer a URL do Atalho publicado e uma origem HTTPS pública para a API. |
 | `Adicione 3 latas de milho.` | A IA interpreta a intenção e o núcleo soma a quantidade a um item correspondente ou cria um novo. |
 | `Usei 1 lata de milho.` | A IA identifica o item e a quantidade; o banco subtrai o valor. Se o estoque chegar a zero, o item é removido. |
@@ -144,7 +138,7 @@ O caminho de leitura de QR Code NFC-e foi removido do fluxo do bot após os test
 
 O fluxo `/atalho` depende de um Atalho publicado no iCloud e configurado para receber texto de entrada. O botão HTTPS “Autenticar neste iPhone” chama `GET /api/shortcut/open`, que redireciona para o esquema URL da [Apple](https://support.apple.com/pt-br/guide/shortcuts/apd624386f42/9.0/ios/26) e executa o Atalho com um JSON contendo a URL pública temporária, o ID do Telegram e um código de uso único. O Atalho troca esse código por um token de acesso no `POST /api/shortcut/link`; o código expira em 15 minutos e só pode ser usado uma vez. O uso de HTTPS no botão atende à exigência do Telegram de aceitar somente links HTTP ou `tg://` ([Bot API do Telegram](https://core.telegram.org/bots/api)).
 
-Com o token no cabeçalho `Authorization: Bearer <token>`, o Atalho pode consultar `GET /api/shortcut/pantry` ou enviar uma mensagem em `POST /api/shortcut/message` com `{"message":"Adicione 2 litros de leite"}`. A resposta traz `reply` e, quando a ação é uma consulta, `items`. Para revogar um token específico, use `DELETE /api/shortcut/token`. A API também oferece `GET /health` para verificar disponibilidade. Cada token concede acesso de leitura e alteração à despensa; o Atalho precisa persistir esse token entre execuções. Se for salvo como arquivo em texto simples, qualquer pessoa com acesso aos arquivos do iCloud Drive pode usá-lo; revogue-o se o dispositivo ou arquivo for perdido. Só pode haver um código de vinculação pendente por conta, e a criação de outro invalida o anterior. Tokens já vinculados são independentes.
+Com o token no cabeçalho `Authorization: Bearer <token>`, o Atalho pode consultar `GET /api/shortcut/pantry`, enviar uma mensagem em `POST /api/shortcut/message` com `{"message":"Adicione 2 litros de leite"}` ou solicitar um link pessoal para abrir o site em `POST /api/shortcut/site`. Esse endpoint retorna `{"site_url":"https://<origem>/#t=<token>"}`; o Atalho pode abrir o endereço retornado. A resposta de mensagem traz `reply` e, quando a ação é uma consulta, `items`. Para revogar um token específico, use `DELETE /api/shortcut/token`. A API também oferece `GET /health` para verificar disponibilidade. Cada token concede acesso de leitura e alteração à despensa; o Atalho precisa persistir esse token entre execuções. Se for salvo como arquivo em texto simples, qualquer pessoa com acesso aos arquivos do iCloud Drive pode usá-lo; revogue-o se o dispositivo ou arquivo for perdido. Só pode haver um código de vinculação pendente por conta, e a criação de outro invalida o anterior. Tokens já vinculados são independentes. Solicitar um link do site invalida o link pessoal anterior daquela conta.
 
 O Quick Tunnel é gratuito e dispensa domínio e conta Cloudflare, mas é temporário: a URL muda a cada execução e deixa de responder quando o processo é encerrado. Rode `deploy/quick-tunnel.ps1` em vez de iniciar `main.py` diretamente; a URL atual será incorporada aos novos links enviados por `/atalho`. Quando reiniciar o bot/túnel, vincule o atalho de novo para atualizar a URL salva nele. Esse modo é para demonstrações, não para uso contínuo ([limitações oficiais](https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/)).
 
@@ -209,19 +203,18 @@ O relatório CSV é gravado em `avaliacao/resultados/`. Cada repetição chama o
 ## Arquitetura
 
 ```text
-Telegram ──> main.py / handlers/telegram.py
-Site ──> site_web/app.py (FastAPI) ───────────────┐
-Atalho iOS ── HTTPS ──> shortcut_api.py ─────────┼──> handlers/core.py
-        (API inicia no main.py)                   │           │
-Telegram ────────────────────────────────────────┘           ├──> Gemini
-                                                            └──> SQLite
+Telegram ──> main.py / handlers/telegram.py ──────────────┐
+Navegador ── HTTPS Quick Tunnel ──> shortcut_api.py ──────┼──> handlers/core.py
+Atalho iOS ─ HTTPS Quick Tunnel ──────────────────────────┘           │
+                                                                      ├──> Gemini
+                                                                      └──> SQLite
 ```
 
 - `main.py`: configura o bot, registra comandos e handlers, e agenda os lembretes.
 - `config.py`: carrega e valida as variáveis de ambiente.
 - `handlers/telegram.py`: integra mensagens, fotos e botões do Telegram com os casos de uso.
-- `shortcut_api.py`: API HTTP para vincular Atalhos iOS, consultar a despensa e enviar mensagens.
-- `site_web/app.py` e `site_web/index.html`: API FastAPI e interface web para consultar, adicionar e consumir itens.
+- `shortcut_api.py`: servidor HTTP que publica a página do site e suas rotas de estoque junto com as rotas de vinculação e uso do Atalho iOS.
+- `site_web/index.html`: página HTML do site. `site_web/app.py` mantém uma opção FastAPI para execução local; o Quick Tunnel usa `shortcut_api.py`, que publica a página e as rotas do site na mesma origem HTTPS do Atalho.
 - `site_web/tokens.py`: cria e valida links pessoais do site, armazenados no banco SQLite.
 - `handlers/core.py`: interpreta os resultados da IA, aplica regras de estoque e coordena lembretes e notas.
 - `ai_config/ai_service.py`: chama o Gemini para interpretar mensagens e extrair itens de notas.
@@ -230,7 +223,7 @@ Telegram ───────────────────────�
 - `deploy/quick-tunnel.ps1`: inicia um Cloudflare Quick Tunnel temporário e o bot para demonstração remota do Atalho.
 - `despensa.template.db`: arquivo modelo do banco incluído no repositório; a execução usa `despensa.db`.
 
-O bot inicia a API do Atalho em uma thread dentro do processo `main.py`. O site FastAPI é independente e precisa ser iniciado à parte. Telegram, site e Atalho reutilizam as regras da despensa em `handlers/core.py` e o mesmo arquivo SQLite.
+O bot inicia o servidor HTTP em uma thread dentro do processo `main.py`. Ele publica o site e as APIs na mesma porta, permitindo que o Quick Tunnel encaminhe um único endereço HTTPS. Telegram, site e Atalho reutilizam as regras da despensa em `handlers/core.py` e o mesmo arquivo SQLite.
 
 ## Limitações e escopo
 

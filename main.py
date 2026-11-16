@@ -17,7 +17,7 @@ def main():
 
     api = shortcut_api.iniciar(SHORTCUT_API_HOST, SHORTCUT_API_PORT)
     Thread(target=api.serve_forever, daemon=True).start()
-    logging.info("API do Atalho ouvindo em %s:%s", SHORTCUT_API_HOST, SHORTCUT_API_PORT)
+    logging.info("Site e API ouvindo em %s:%s", SHORTCUT_API_HOST, SHORTCUT_API_PORT)
 
     # Inicializa a aplicação do bot
     app = (

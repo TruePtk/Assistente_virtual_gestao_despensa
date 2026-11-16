@@ -12,7 +12,7 @@ from handlers import core
 from config import IOS_SHORTCUT_INSTALL_URL, SHORTCUT_API_BASE_URL
 from site_web import tokens
 
-URL_SITE = "http://localhost:8000"
+URL_SITE = "http://localhost:8765"
 
 _locks_por_usuario = defaultdict(asyncio.Lock)
 
@@ -24,8 +24,13 @@ def _obter_lock_usuario(user_id: int) -> asyncio.Lock:
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     mensagem = (
         "Olá! Sou seu assistente de despensa inteligente. 🥫\n\n"
-        "Envie a foto de uma nota fiscal de supermercado para eu cadastrar seus itens, "
-        "ou me pergunte o que podemos cozinhar com o que tem guardado."
+        "Envie a foto de uma nota fiscal de supermercado para eu cadastrar seus itens\n"
+        "Você também pode me enviar mensagens de texto descrevendo os itens que deseja adicionar ou consumir.\n"
+        "Use /despensa para ver a lista de itens cadastrados.\n"
+        "Use /atalho para instalar o Atalho no iPhone e vincular sua conta.\n"
+        "Use /site para obter um link pessoal para consultar e editar sua despensa no site. Caso o link pare de funcionar, tente gerar um novo link pessoal.\n"
+        "Use /start para ver esta mensagem novamente."
+        
     )
     await update.message.reply_text(mensagem)
 
@@ -50,7 +55,8 @@ async def atalho_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Para configurar o Atalho no iPhone:\n"
         "1. Instale pelo botão abaixo.\n"
         "2. Toque em *Autenticar neste iPhone* e abra o link enviado. O Atalho usará o "
-        "código temporário para vincular sua conta e salvar o token de acesso para as próximas solicitações.",
+        "código temporário para vincular sua conta e salvar o token de acesso para as próximas solicitações.\n"
+        "NOTE: Caso o atalho venha a apresentar erro de conexão com o servidor, basta autenticar novamente para gerar um novo token.",
         reply_markup=InlineKeyboardMarkup(botoes),
         parse_mode="Markdown",
     )
@@ -69,8 +75,9 @@ def _url_autenticacao_atalho(user_id: int) -> str:
 async def site_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Gera um link pessoal para consultar e editar a despensa no site."""
     token = tokens.criar_token(update.effective_user.id)
+    base_url = SHORTCUT_API_BASE_URL or URL_SITE
     await update.effective_message.reply_text(
-        f"Seu link pessoal (não compartilhe):\n{URL_SITE}/#t={token}"
+        f"Seu link pessoal (não compartilhe):\n{base_url}/#t={token}"
     )
 
 
@@ -146,17 +153,17 @@ async def _lidar_com_botoes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = query.from_user.id
     print(f"Botão pressionado por {user_id}: {dados}")
 
-    if dados == "atalho_autenticar":
-        await query.message.reply_text(
-            "Toque no botão abaixo para abrir o Atalho e vincular sua conta.",
-            reply_markup=InlineKeyboardMarkup([[
-                InlineKeyboardButton(
-                    "Abrir Atalho e autenticar",
-                    url=_url_autenticacao_atalho(user_id),
-                )
-            ]]),
-        )
-    elif dados.startswith("remover_"):
+    # if dados == "atalho_autenticar":
+    #     await query.message.reply_text(
+    #         "Toque no botão abaixo para abrir o Atalho e vincular sua conta.",
+    #         reply_markup=InlineKeyboardMarkup([[
+    #             InlineKeyboardButton(
+    #                 "Abrir Atalho e autenticar",
+    #                 url=_url_autenticacao_atalho(user_id),
+    #             )
+    #         ]]),
+    #     )
+    if dados.startswith("remover_"):
         item_id = dados.split("_", 1)[1]
         item = core.selecionar_item(user_id, item_id)
         if not item:
