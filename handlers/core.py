@@ -10,6 +10,7 @@ from difflib import SequenceMatcher
 
 import ai_config.ai_service as ai_service
 import database.database as database
+from formatacao import formatar_quantidade
 
 CADENCIA_LEMBRETES_DIAS = {
     "Laticínios": 5,
@@ -192,7 +193,7 @@ def interpretar_mensagem(texto: str, user_id: int, user_nome: str = "") -> dict:
                     respostas.append(erro)
                     continue
                 respostas.append(
-                    f"Adicionado: {float(operacao['quantidade']):g} "
+                    f"Adicionado: {formatar_quantidade(float(operacao['quantidade']))} "
                     f"{operacao.get('unidade_medida', 'unidade')} de {nome}."
                 )
             except (KeyError, TypeError, ValueError):

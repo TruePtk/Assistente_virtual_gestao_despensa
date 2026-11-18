@@ -11,6 +11,7 @@ from telegram.ext import ContextTypes
 from handlers import core
 from config import IOS_SHORTCUT_INSTALL_URL, SHORTCUT_API_BASE_URL
 from site_web import tokens
+from formatacao import formatar_quantidade
 
 URL_SITE = "http://localhost:8765"
 
@@ -94,7 +95,7 @@ async def _listar_despensa(update: Update):
     texto = "🥫 *Sua Despensa:*\n\n"
 
     for item_id, nome, qtd, unid in itens:
-        texto += f"• {qtd} {unid} de {nome}\n"
+        texto += f"• {formatar_quantidade(qtd)} {unid} de {nome}\n"
         botoes.append([InlineKeyboardButton(f"❌ Consumi: {nome}", callback_data=f"remover_{item_id}")])
 
     await update.message.reply_text(
@@ -130,7 +131,7 @@ async def verificar_lembretes(context: ContextTypes.DEFAULT_TYPE):
                     chat_id=user_id,
                     text=(
                         f"Faz alguns dias que você não atualiza o *{nome}*. "
-                        f"Ainda tem aproximadamente {qtd:g} {unidade} na despensa?"
+                        f"Ainda tem aproximadamente {formatar_quantidade(qtd)} {unidade} na despensa?"
                     ),
                     reply_markup=InlineKeyboardMarkup(botoes),
                     parse_mode="Markdown",
@@ -153,16 +154,6 @@ async def _lidar_com_botoes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = query.from_user.id
     print(f"Botão pressionado por {user_id}: {dados}")
 
-    # if dados == "atalho_autenticar":
-    #     await query.message.reply_text(
-    #         "Toque no botão abaixo para abrir o Atalho e vincular sua conta.",
-    #         reply_markup=InlineKeyboardMarkup([[
-    #             InlineKeyboardButton(
-    #                 "Abrir Atalho e autenticar",
-    #                 url=_url_autenticacao_atalho(user_id),
-    #             )
-    #         ]]),
-    #     )
     if dados.startswith("remover_"):
         item_id = dados.split("_", 1)[1]
         item = core.selecionar_item(user_id, item_id)
@@ -179,7 +170,7 @@ async def _lidar_com_botoes(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("Acabou Tudo!", callback_data=f"baixar_{item_id}_TUDO")],
             [InlineKeyboardButton("🔙 Cancelar", callback_data="cancelar_baixa")],
         ]
-        texto = f"🥫 **Consumindo: {nome}**\nEstoque atual: {qtd} {unid}\n\nQuanto você utilizou?"
+        texto = f"🥫 **Consumindo: {nome}**\nEstoque atual: {formatar_quantidade(qtd)} {unid}\n\nQuanto você utilizou?"
         await query.edit_message_text(texto, reply_markup=InlineKeyboardMarkup(botoes), parse_mode="Markdown")
     elif dados.startswith("lembrete_ok_"):
         item_id = int(dados.rsplit("_", 1)[1])
@@ -200,7 +191,7 @@ async def _lidar_com_botoes(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton("Acabou Tudo!", callback_data=f"baixar_{item_id}_TUDO")],
         ]
         await query.edit_message_text(
-            f"Quanto você utilizou de {nome}?\nEstoque atual: {qtd} {unid}",
+            f"Quanto você utilizou de {nome}?\nEstoque atual: {formatar_quantidade(qtd)} {unid}",
             reply_markup=InlineKeyboardMarkup(botoes),
         )
     elif dados.startswith("lembrete_adiar_"):
@@ -259,7 +250,7 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         texto = "✅ *Itens adicionados à sua despensa:*\n\n"
         for item in resultado.get("itens", []):
-            texto += f"• {item['quantidade']} {item['unidade_medida']} de {item['nome']} ({item['categoria']})\n"
+            texto += f"• {formatar_quantidade(item['quantidade'])} {item['unidade_medida']} de {item['nome']} ({item['categoria']})\n"
         if resultado.get("avisos"):
             texto += "\n⚠️ " + "\n⚠️ ".join(resultado["avisos"])
         await mensagem_espera.edit_text(texto, parse_mode="Markdown")

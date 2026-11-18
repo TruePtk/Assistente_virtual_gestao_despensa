@@ -132,7 +132,7 @@ class ShortcutRequestHandler(BaseHTTPRequestHandler):
             return
         itens = core.obter_itens_despensa(telegram_id)
         self._json(200, {"items": [
-            {"id": item_id, "name": nome, "quantity": quantidade, "unit": unidade}
+            {"id": item_id, "name": nome, "quantity": round(quantidade, 3), "unit": unidade}
             for item_id, nome, quantidade, unidade in itens
         ]})
 
@@ -264,7 +264,7 @@ class ShortcutRequestHandler(BaseHTTPRequestHandler):
         resposta = {"action": resultado.get("acao"), "reply": resultado.get("resposta", "")}
         if resultado.get("acao") == "consultar":
             resposta["items"] = [
-                {"id": item_id, "name": nome, "quantity": quantidade, "unit": unidade}
+                {"id": item_id, "name": nome, "quantity": round(quantidade, 3), "unit": unidade}
                 for item_id, nome, quantidade, unidade in resultado.get("itens", [])
             ]
         self._json(200, resposta)

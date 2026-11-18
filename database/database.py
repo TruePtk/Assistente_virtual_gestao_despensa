@@ -2,6 +2,7 @@ import sqlite3
 import os
 import math
 from datetime import datetime, timedelta, timezone
+from formatacao import formatar_quantidade
 
 # O banco de dados será salvo neste arquivo local
 DB_FILE = "despensa.db"
@@ -305,7 +306,7 @@ def consumir_quantidade_item(item_id: int, telegram_id: int, quantidade_subtrair
                     WHERE id = ? AND telegram_id = ?
                 ''', (nova_qtd, item_id, telegram_id))
                 conn.commit()
-                return f"Baixa registrada! Restam {nova_qtd:.2f} de {nome}."
+                return f"Baixa registrada! Restam {formatar_quantidade(nova_qtd)} de {nome}."
         except ValueError:
             return "Erro ao calcular a quantidade."
 

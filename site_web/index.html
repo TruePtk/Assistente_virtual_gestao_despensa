@@ -186,6 +186,10 @@
       document.getElementById("aviso").textContent = texto;
     }
 
+    function formatarQuantidade(valor) {
+      return Number(valor).toFixed(3).replace(/\.?0+$/, "");
+    }
+
     function botao(texto, aoClicar) {
       const elemento = document.createElement("button");
       elemento.type = "button";
@@ -211,7 +215,7 @@
         for (const item of itens) {
           const linha = lista.insertRow();
           linha.insertCell().textContent = item.nome;
-          linha.insertCell().textContent = `${item.quantidade} ${item.unidade || ""}`.trim();
+          linha.insertCell().textContent = `${formatarQuantidade(item.quantidade)} ${item.unidade || ""}`.trim();
           const acoes = linha.insertCell();
           acoes.className = "acoes";
           acoes.append(
